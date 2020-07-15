@@ -1,0 +1,93 @@
+enum RedemptionState{
+  AWAITING_WITHDRAWAL_SIGNATURE,
+  AWAITING_WITHDRAWAL_PROOF,
+  REDEEMED
+}
+
+type Approval @entity {
+  id: ID!
+  timestamp: BigInt!
+  transaction: Transaction
+  value: BigInt!
+  owner: Bytes
+  spender: Bytes
+}
+
+type Transfer @entity {
+  id: ID!
+  timestamp: BigInt!
+  transaction: Transaction
+  value: BigDecimal!
+  from: Bytes
+  to: Bytes
+  gasPrice: BigInt
+  gasUsed: BigInt
+}
+
+type TBTCToken @entity{
+  id: ID!
+  name: String!
+  symbol: String!
+  decimals: Int!
+  address: Bytes!
+  totalSupply: BigDecimal!
+  maxSupply: BigInt!
+  totalTokenHolders: BigInt!
+  currentTokenHolders: BigInt!
+  totalMint: BigDecimal!
+  totalBurn: BigDecimal!
+}
+
+type TokenHolder @entity{
+  id: ID!
+  "KEEP Token balance of this address expressed in the smallest unit of the KEEP Token"
+  tokenBalanceRaw: BigInt!
+  "KEEP Token balance of this address expressed as a BigDecimal normalized value for the KEEP Token"
+  tokenBalance: BigDecimal!
+  "Total amount of KEEP Token ever held by this address expressed in the smallest unit of the KEEP Token"
+  totalTokensHeldRaw: BigInt!
+  "Total amount of KEEP Token ever held by this address expressed as a BigDecimal normalized value for the KEEP Token"
+  totalTokensHeld: BigDecimal!
+}
+
+type Mint @entity{
+  id : ID!  
+  timestamp: BigInt!
+  transaction : Transaction
+  to : Bytes
+  amount : BigDecimal!
+}
+
+type Burn @entity{
+  id: ID!
+  timestamp: BigInt!
+  transaction : Transaction
+  from : Bytes
+  amount: BigDecimal!
+}
+
+type Transaction @entity{
+  id: ID!,
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  mint: [Mint!] @derivedFrom(field: "transaction")
+  burn: [Burn!] @derivedFrom(field: "transaction")
+}
+
+type DepositRedemption @entity{
+  id: ID!
+  transaction: Transaction
+  depositContractAddress: Bytes!,
+  digest: Bytes!,
+  outpoint : Bytes!,
+  redeemerOutputScript: Bytes!,
+  requestedFee : BigInt!,
+  requester : Bytes!,
+  utxoSize : BigInt!,
+  state: RedemptionState
+}
+
+type AllowNewDepositsUpdated @entity{
+  id:ID!
+  allowNewDepositsUpdated: Boolean
+}

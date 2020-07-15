@@ -1,0 +1,246 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: TBTCSystemContract
+    network: mainnet
+    source:
+      address: "0x41a1b40c1280883ea14c6a71e23bb66b83b3fb59"
+      abi: TBTCSystemContract
+      startBlock: 10071347 
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AllowNewDepositsUpdated
+        - CollateralizationThresholdsUpdateStarted
+        - CollateralizationThresholdsUpdated
+        - CourtesyCalled
+        - Created
+        - EthBtcPriceFeedAdded
+        - EthBtcPriceFeedAdditionStarted
+        - ExitedCourtesyCall
+        - FraudDuringSetup
+        - Funded
+        - FunderAbortRequested
+        - GotRedemptionSignature
+        - KeepFactorySingleShotUpdateStarted
+        - KeepFactorySingleShotUpdated
+        - Liquidated
+        - LotSizesUpdateStarted
+        - LotSizesUpdated
+        - OwnershipTransferred
+        - Redeemed
+        - RedemptionRequested
+        - RegisteredPubkey
+        - SetupFailed
+        - SignerFeeDivisorUpdateStarted
+        - SignerFeeDivisorUpdated
+        - StartedLiquidation
+      abis:
+        - name: TBTCSystemContract
+          file: ./abis/TBTCSystemContract.json
+      eventHandlers:
+        - event: AllowNewDepositsUpdated(bool)
+          handler: handleAllowNewDepositsUpdated
+        - event: CollateralizationThresholdsUpdateStarted(uint16,uint16,uint16,uint256)
+          handler: handleCollateralizationThresholdsUpdateStarted
+        - event: CollateralizationThresholdsUpdated(uint16,uint16,uint16)
+          handler: handleCollateralizationThresholdsUpdated
+        - event: CourtesyCalled(indexed address,uint256)
+          handler: handleCourtesyCalled
+        - event: Created(indexed address,indexed address,uint256)
+          handler: handleCreated
+        - event: EthBtcPriceFeedAdded(address)
+          handler: handleEthBtcPriceFeedAdded
+        - event: EthBtcPriceFeedAdditionStarted(address,uint256)
+          handler: handleEthBtcPriceFeedAdditionStarted
+        - event: ExitedCourtesyCall(indexed address,uint256)
+          handler: handleExitedCourtesyCall
+        - event: FraudDuringSetup(indexed address,uint256)
+          handler: handleFraudDuringSetup
+        - event: Funded(indexed address,uint256)
+          handler: handleFunded
+        - event: FunderAbortRequested(indexed address,bytes)
+          handler: handleFunderAbortRequested
+        - event: GotRedemptionSignature(indexed address,indexed bytes32,bytes32,bytes32,uint256)
+          handler: handleGotRedemptionSignature
+        - event: KeepFactorySingleShotUpdateStarted(address,address,uint256)
+          handler: handleKeepFactorySingleShotUpdateStarted
+        - event: KeepFactorySingleShotUpdated(address,address)
+          handler: handleKeepFactorySingleShotUpdated
+        - event: Liquidated(indexed address,uint256)
+          handler: handleLiquidated
+        - event: LotSizesUpdateStarted(uint64[],uint256)
+          handler: handleLotSizesUpdateStarted
+        - event: LotSizesUpdated(uint64[])
+          handler: handleLotSizesUpdated
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Redeemed(indexed address,indexed bytes32,uint256)
+          handler: handleRedeemed
+        - event: RedemptionRequested(indexed address,indexed address,indexed bytes32,uint256,bytes,uint256,bytes)
+          handler: handleRedemptionRequested
+        - event: RegisteredPubkey(indexed address,bytes32,bytes32,uint256)
+          handler: handleRegisteredPubkey
+        - event: SetupFailed(indexed address,uint256)
+          handler: handleSetupFailed
+        - event: SignerFeeDivisorUpdateStarted(uint16,uint256)
+          handler: handleSignerFeeDivisorUpdateStarted
+        - event: SignerFeeDivisorUpdated(uint16)
+          handler: handleSignerFeeDivisorUpdated
+        - event: StartedLiquidation(indexed address,bool,uint256)
+          handler: handleStartedLiquidation
+      file: ./src/TBTCSystem.ts
+  - kind: ethereum/contract
+    name: tBTCTokenContract
+    network: mainnet
+    source:
+      address: "0x1bbe271d15bb64df0bc6cd28df9ff322f2ebd847"
+      abi: tBTCTokenContract
+      startBlock: 10071373
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - Transfer
+      abis:
+        - name: tBTCTokenContract
+          file: ./abis/tBTCTokenContract.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/TBTCToken.ts
+  - kind: ethereum/contract
+    name: VendingContract
+    network: mainnet
+    source:
+      address: "0xca563c455b7dda86d55310c71fbd6ed132c5c28c"
+      abi: VendingContract
+      startBlock : 10071351 
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ExampleEntity
+      abis:
+        - name: VendingContract
+          file: ./abis/VendingContract.json     
+      callHandlers:
+        - function: setExternalAddresses(address,address,address)
+          handler: handleSetExternalAddresses
+        - function: tbtcToBtc(address,bytes8,bytes,address)
+          handler: handleTbtcToBtc
+        - function: tbtcToTdt(uint256)
+          handler: handleTbtcToTdt
+        - function: tdtToTbtc(uint256)
+          handler: handleTdtToTbtc
+      file: ./src/Vending.ts
+  - kind: ethereum/contract
+    name: FeeRebaseContract
+    network: mainnet
+    source:
+      address: "0xc51217DCB86E95b6EDb1c5B6827E80F533f09234"
+      abi: FeeRebaseContract
+      startBlock : 10071375
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - Transfer
+      abis:
+        - name: FeeRebaseContract
+          file: ./abis/FeeRebaseContract.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/FeeRebase.ts
+  - kind: ethereum/contract
+    name: TDTContract
+    network: mainnet
+    source:
+      address: "0xB98b83027D16f1Da8ab54564be4B6A713401cd53"
+      abi: TDTContract
+      startBlock : 10071374
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - Transfer
+      abis:
+        - name: TDTContract
+          file: ./abis/TDTContract.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/TDTToken.ts
+  - kind: ethereum/contract
+    name: DepositContract
+    network: mainnet
+    source:
+      address: "0x52BA73c58FDe7E3649fC2E15ef4723b0c47C2D3d"
+      abi: DepositContract
+      startBlock: 10081528
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DepositRedemption
+      abis:
+        - name: DepositContract
+          file: ./abis/DepositContract.json
+      callHandlers:
+        - function: createNewDeposit(address,address,address,address,address,uint16,uint16,uint64)
+          handler: handleCreateNewDeposit
+        - function: transferAndRequestRedemption(bytes8,bytes,address)
+          handler: handleTransferAndRequestRedemption
+        - function: requestRedemption(bytes8,bytes)
+          handler: handleRequestRedemption
+        - function: provideRedemptionSignature(uint8,bytes32,bytes32)
+          handler: handleProvideRedemptionSignature
+        - function: provideRedemptionProof(bytes4,bytes,bytes,bytes4,bytes,uint256,bytes)
+          handler: handleProvideRedemptionProof
+        # - exitCourtesyCall()
+        # - increaseRedemptionFee(bytes8,bytes8)
+        # - initialize(address)
+        # - notifyCourtesyCall()
+        # - notifyCourtesyTimeout()
+        # - notifyFundingTimeout()
+        # - notifyRedemptionProofTimeout()
+        # - notifySignatureTimeout()
+        # - notifySignerSetupFailure()
+        # - notifyUndercollateralizedLiquidation()
+        # - provideBTCFundingProof(bytes4,bytes,bytes,bytes4,uint8,bytes,uint256,bytes)
+        # - provideECDSAFraudProof(uint8,bytes32,bytes32,bytes32,bytes)
+        # - provideFundingECDSAFraudProof(uint8,bytes32,bytes32,bytes32,bytes)
+        # - provideRedemptionProof(bytes4,bytes,bytes,bytes4,bytes,uint256,bytes)
+        # - provideRedemptionSignature(uint8,bytes32,bytes32)
+        # - purchaseSignerBondsAtAuction()
+        # - requestFunderAbort(bytes)
+        # - requestRedemption(bytes8,bytes)
+        # - retrieveSignerPubkey()
+        # - transferAndRequestRedemption(bytes8,bytes,address)
+        # - withdrawFunds()
+      file: ./src/Deposit.ts
