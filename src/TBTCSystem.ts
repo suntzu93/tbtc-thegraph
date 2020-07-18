@@ -1,218 +1,156 @@
-import { BigInt,log } from "@graphprotocol/graph-ts"
+import { BigInt, log } from "@graphprotocol/graph-ts"
 import {
   TBTCSystemContract,
-  AllowNewDepositsUpdated,
-  CollateralizationThresholdsUpdateStarted,
-  CollateralizationThresholdsUpdated,
-  CourtesyCalled,
-  Created,
-  EthBtcPriceFeedAdded,
-  EthBtcPriceFeedAdditionStarted,
-  ExitedCourtesyCall,
-  FraudDuringSetup,
-  Funded,
-  FunderAbortRequested,
   GotRedemptionSignature,
-  KeepFactorySingleShotUpdateStarted,
-  KeepFactorySingleShotUpdated,
   Liquidated,
-  LotSizesUpdateStarted,
-  LotSizesUpdated,
-  OwnershipTransferred,
+  CourtesyCalled,
   Redeemed,
   RedemptionRequested,
-  RegisteredPubkey,
-  SetupFailed,
-  SignerFeeDivisorUpdateStarted,
-  SignerFeeDivisorUpdated,
   StartedLiquidation,
-  LogCourtesyCalledCall
+  Created,
+  SetupFailed,
+  AllowNewDepositsUpdated,
+  RegisteredPubkey
 } from "../generated/TBTCSystemContract/TBTCSystemContract"
 
 import {
   getOrCreateDepositRedemption,
   getOrCreateTransaction,
-  getOrCreateBurn,
-  getOrCreateAllowNewDepositsUpdated
+  getOrCreateAllowNewDepositsUpdated,
+  getOrCreateDepositLiquidation as getDepositLiquidation,
+  getOrCreateDeposit,
+  getTbtcTokenEntity
 } from "./utils/helpers";
-// import { toDecimalBtc } from "./utils/decimals";
 
-export function handleAllowNewDepositsUpdated(
-  event: AllowNewDepositsUpdated
-): void {
-  let allowNewDepositsUpdated = getOrCreateAllowNewDepositsUpdated();
-  allowNewDepositsUpdated.allowNewDepositsUpdated = event.params._allowNewDeposits;
-  allowNewDepositsUpdated.save();
-  
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.approvedToLog(...)
-  // - contract.emergencyPauseNewDeposits(...)
-  // - contract.fetchBitcoinPrice(...)
-  // - contract.fetchRelayCurrentDifficulty(...)
-  // - contract.fetchRelayPreviousDifficulty(...)
-  // - contract.getAllowNewDeposits(...)
-  // - contract.getAllowedLotSizes(...)
-  // - contract.getGovernanceTimeDelay(...)
-  // - contract.getInitialCollateralizedPercent(...)
-  // - contract.getNewDepositFeeEstimate(...)
-  // - contract.getPriceFeedGovernanceTimeDelay(...)
-  // - contract.getRemainingCollateralizationThresholdsUpdateTime(...)
-  // - contract.getRemainingEthBtcPriceFeedAdditionTime(...)
-  // - contract.getRemainingKeepFactorySingleShotUpdateTime(...)
-  // - contract.getRemainingLotSizesUpdateTime(...)
-  // - contract.getRemainingPauseTerm(...)
-  // - contract.getRemainingSignerFeeDivisorUpdateTime(...)
-  // - contract.getSeverelyUndercollateralizedThresholdPercent(...)
-  // - contract.getSignerFeeDivisor(...)
-  // - contract.getUndercollateralizedThresholdPercent(...)
-  // - contract.isAllowedLotSize(...)
-  // - contract.isOwner(...)
-  // - contract.owner(...)
-  // - contract.priceFeed(...)
-  // - contract.relay(...)
+export function handleCreated (event: Created): void {
+  let depositContractAddress = event.params._depositContractAddress.toHex();
+  let deposit = getOrCreateDeposit(depositContractAddress);
+  let tbtcToken = getTbtcTokenEntity();
+  deposit.tbtcToken = tbtcToken.id;
+  deposit.timestamp = event.block.timestamp;
+
+  let systemContract = TBTCSystemContract.bind(event.address);
+  deposit.initialCollateralizedPercent =  BigInt.fromI32(systemContract.getInitialCollateralizedPercent());
+  deposit.remainingPauseTerm = systemContract.try_getRemainingPauseTerm() as BigInt;
+  deposit.signerFeeDivisor = BigInt.fromI32(systemContract.getSignerFeeDivisor());
+  deposit.lotSize = systemContract.getAllowedLotSizes();
+  deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
+  deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
+  deposit.state = "AWAITING_SIGNER_SETUP";
+  deposit.save()
 }
 
-export function handleCollateralizationThresholdsUpdateStarted(
-  event: CollateralizationThresholdsUpdateStarted
-): void {}
-
-export function handleCollateralizationThresholdsUpdated(
-  event: CollateralizationThresholdsUpdated
-): void {}
+export function handleSetupFailed (event: SetupFailed): void {
+  let deposit = getOrCreateDeposit(event.params._depositContractAddress.toHex());
+  deposit.state = "SETUP_FAILED";
+  deposit.save()
+}
 
 export function handleCourtesyCalled(event: CourtesyCalled): void {
-  log.warning("handleCourtesyCalled _depositContractAddress = {} , _timestamp = {} ",[
-    event.params._depositContractAddress.toHexString(),
-    event.params._timestamp.toString()
-  ])
+  let depositLiquidation = getDepositLiquidation(event.params._depositContractAddress.toHex());
+  depositLiquidation.timestamp = event.block.timestamp;
+  depositLiquidation.state = "COURTESY_CALL";
+  depositLiquidation.save();
 }
 
-export function handleCreated(event: Created): void {
-  log.warning("handleCreated _depositContractAddress = {} , _keepAddress = {} , _timestamp = {} , hash = {}", [
-    event.params._depositContractAddress.toHexString(),
-    event.params._keepAddress.toHexString(),
-    event.params._timestamp.toString(),
-    event.transaction.hash.toHexString()
-  ])
+export function handleRedemptionRequested(event: RedemptionRequested): void {
+  let id =  event.transaction.hash.toHex();
+  //Transaction info
+  let transaction = getOrCreateTransaction(id)
+  transaction.timestamp = event.block.timestamp;
+  transaction.blockNumber = event.block.number;
+
+  //Save deposit 
+  let deposit = getOrCreateDeposit(event.params._depositContractAddress.toHex());
+  let tbtcToken = getTbtcTokenEntity();
+  deposit.tbtcToken = tbtcToken.id;
+  deposit.timestamp = event.block.timestamp;
+  let systemContract = TBTCSystemContract.bind(event.address);
+  deposit.initialCollateralizedPercent =  BigInt.fromI32(systemContract.getInitialCollateralizedPercent());
+  deposit.remainingPauseTerm = systemContract.try_getRemainingPauseTerm() as BigInt;
+  deposit.signerFeeDivisor = BigInt.fromI32(systemContract.getSignerFeeDivisor());
+  deposit.lotSize = systemContract.getAllowedLotSizes();
+  deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
+  deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
+  deposit.state = "AWAITING_SIGNER_SETUP";
+  deposit.save()
+
+  //DepositRedemption Info
+  let depositRedemp = getOrCreateDepositRedemption(event.params._depositContractAddress.toHex());
+  depositRedemp.transaction = transaction.id;
+  depositRedemp.depositContractAddress = event.params._depositContractAddress;
+  depositRedemp.digest = event.params._digest;
+  depositRedemp.outpoint = event.params._outpoint;
+  depositRedemp.redeemerOutputScript = event.params._redeemerOutputScript;
+  depositRedemp.requestedFee = event.params._requestedFee;
+  depositRedemp.requester = event.params._requester;
+  depositRedemp.utxoSize = event.params._utxoSize;
+  depositRedemp.state = "AWAITING_WITHDRAWAL_SIGNATURE";
+  depositRedemp.timestamp = event.block.timestamp;
+  depositRedemp.deposit = deposit.id;
+  depositRedemp.save()
 }
-
-export function handleEthBtcPriceFeedAdded(event: EthBtcPriceFeedAdded): void {}
-
-export function handleEthBtcPriceFeedAdditionStarted(
-  event: EthBtcPriceFeedAdditionStarted
-): void {}
-
-export function handleExitedCourtesyCall(event: ExitedCourtesyCall): void {}
-
-export function handleFraudDuringSetup(event: FraudDuringSetup): void {}
-
-export function handleFunded(event: Funded): void {}
-
-export function handleFunderAbortRequested(event: FunderAbortRequested): void {}
 
 export function handleGotRedemptionSignature(
   event: GotRedemptionSignature
 ): void {
-  log.warning("GotRedemptionSignature _depositContractAddress = {}, _digest = {} , _s = {}, _r = {} ,_timestamp = {}, hash {} ", 
-    [
-      event.params._depositContractAddress.toHexString(), 
-      event.params._digest.toHexString(),
-      event.params._s.toHexString(),
-      event.params._r.toHexString(),
-      event.params._timestamp.toString(),
-      event.transaction.hash.toHexString()
-    ])
+  let depositRedemp = getOrCreateDepositRedemption(event.params._depositContractAddress.toHex());
+  depositRedemp.state = "AWAITING_WITHDRAWAL_PROOF";
+  depositRedemp.digest = event.params._digest;
+  depositRedemp.timestamp = event.block.timestamp;
+  depositRedemp.save();
 }
-
-export function handleKeepFactorySingleShotUpdateStarted(
-  event: KeepFactorySingleShotUpdateStarted
-): void {}
-
-export function handleKeepFactorySingleShotUpdated(
-  event: KeepFactorySingleShotUpdated
-): void {}
-
-export function handleLiquidated(event: Liquidated): void {
-  log.warning("handleLiquidated _depositContractAddress = {} ,_timestamp = {} , txhash = {}",[
-    event.params._depositContractAddress.toHexString(),
-    event.params._timestamp.toString(),
-    event.transaction.hash.toHexString()
-  ])
-}
-
-export function handleLotSizesUpdateStarted(
-  event: LotSizesUpdateStarted
-): void {}
-
-export function handleLotSizesUpdated(event: LotSizesUpdated): void {}
-
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
 
 export function handleRedeemed(event: Redeemed): void {
-  log.warning("handleRedeemed _depositContractAddress = {}, _txid = {} , _timestamp = {}, hash = {}", 
-    [
-      event.params._depositContractAddress.toHexString(), 
-      event.params._txid.toHexString(),
-      event.params._timestamp.toHexString(),
-      event.transaction.hash.toHexString()
-    ])
+  let depositRedemp = getOrCreateDepositRedemption(event.params._depositContractAddress.toHex());
+  let deposit = getOrCreateDeposit(depositRedemp.id);
+  deposit.state = "REDEEMED";
+  deposit.save();
+
+  depositRedemp.state = "REDEEMED";
+  depositRedemp.txid = event.params._txid;
+  depositRedemp.timestamp = event.block.timestamp
+  depositRedemp.deposit = deposit.id;
+  depositRedemp.save();
 }
 
-export function handleRedemptionRequested(event: RedemptionRequested): void {
-  // let id =  event.transaction.hash.toHex();
-  // //Transaction info
-  // let transaction = getOrCreateTransaction(id)
-  // transaction.timestamp = event.block.timestamp;
-  // transaction.blockNumber = event.block.number;
-  // //Burn info
-  // let burn = getOrCreateBurn(id)
-  // burn.timestamp = transaction.timestamp;
-  // burn.transaction = transaction.id;
-  // burn.amount = toDecimalBtc(event.params._utxoSize);
-  // burn.from = event.params._requester;
-  // transaction.burn.push(burn.id);
-  // transaction.save()
-  // burn.save()
-
-  // //DepositRedemption Info
-  // let depositRedemp = getOrCreateDepositRedemption(id);
-  // depositRedemp.transaction = transaction.id;
-  // depositRedemp.depositContractAddress = event.params._depositContractAddress;
-  // depositRedemp.digest = event.params._digest;
-  // depositRedemp.outpoint = event.params._outpoint;
-  // depositRedemp.redeemerOutputScript = event.params._redeemerOutputScript;
-  // depositRedemp.requestedFee = event.params._requestedFee;
-  // depositRedemp.requester = event.params._requester;
-  // depositRedemp.utxoSize = event.params._utxoSize;
-  // depositRedemp.state = "AWAITING_WITHDRAWAL_SIGNATURE";
-  // depositRedemp.save()
-
-  log.warning("handleRedemptionRequested _depositContractAddress = {}, _digest = {} , _outpoint = {} , _redeemerOutputScript = {} , _requestedFee = {} , _requester = {}, _utxoSize = {}, hash = {}",[
-    event.params._depositContractAddress.toHexString(),
-    event.params._digest.toHexString(),
-    event.params._outpoint.toHexString(),
-    event.params._redeemerOutputScript.toHexString(),
-    event.params._requestedFee.toString(),
-    event.params._requester.toHexString(),
-    event.params._utxoSize.toString(),
-    event.transaction.hash.toHexString()
-  ])
+export function handleStartedLiquidation(event: StartedLiquidation): void {
+  let depositLiquidation = getDepositLiquidation(event.params._depositContractAddress.toHex());
+  let deposit = getOrCreateDeposit(depositLiquidation.id);
+  depositLiquidation.deposit = deposit.id;
+  depositLiquidation.timestamp = event.block.timestamp
+  depositLiquidation.wasFraud = event.params._wasFraud;
+  if(depositLiquidation.wasFraud){
+    depositLiquidation.state = "FRAUD_LIQUIDATION_IN_PROGRESS";
+  }else {
+    depositLiquidation.state = "LIQUIDATION_IN_PROGRESS";
+  }
+  depositLiquidation.save();
 }
 
-export function handleRegisteredPubkey(event: RegisteredPubkey): void {}
+export function handleLiquidated(event: Liquidated): void {
+  let depositRedemp = getOrCreateDepositRedemption(event.params._depositContractAddress.toHex());
+  depositRedemp.state = "REDEEMED_ERROR_MOVE_TO_LIQUIDATION";
+  depositRedemp.save();
 
-export function handleSetupFailed(event: SetupFailed): void {}
+  let deposit = getOrCreateDeposit(depositRedemp.id);
+  deposit.state = "LIQUIDATED";
+  deposit.save();
 
-export function handleSignerFeeDivisorUpdateStarted(
-  event: SignerFeeDivisorUpdateStarted
-): void {}
+  let depositLiquidation = getDepositLiquidation(event.params._depositContractAddress.toHex());
+  let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
+  transaction.timestamp = event.block.timestamp;
+  transaction.blockNumber = event.block.number;
+  depositLiquidation.transaction = transaction.id;
+  depositLiquidation.timestamp = event.block.timestamp
+  depositLiquidation.state = "LIQUIDATED";
+  depositLiquidation.deposit = deposit.id;
+  transaction.save();
+  depositLiquidation.save();
+}
 
-export function handleSignerFeeDivisorUpdated(
-  event: SignerFeeDivisorUpdated
-): void {}
-
-export function handleStartedLiquidation(event: StartedLiquidation): void {}
+export function handleAllowNewDepositsUpdated(event: AllowNewDepositsUpdated): void{
+  let depositAllowStateEntity = getOrCreateAllowNewDepositsUpdated();
+  depositAllowStateEntity.allowNewDepositsUpdated = event.params._allowNewDeposits;
+  depositAllowStateEntity.save()
+}

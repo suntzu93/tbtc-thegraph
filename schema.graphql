@@ -1,16 +1,29 @@
 enum RedemptionState{
   AWAITING_WITHDRAWAL_SIGNATURE,
   AWAITING_WITHDRAWAL_PROOF,
+  REDEEMED_ERROR_MOVE_TO_LIQUIDATION
   REDEEMED
 }
 
-type Approval @entity {
-  id: ID!
-  timestamp: BigInt!
-  transaction: Transaction
-  value: BigInt!
-  owner: Bytes
-  spender: Bytes
+enum LiquidationState{
+  COURTESY_CALL,
+  FRAUD_LIQUIDATION_IN_PROGRESS,
+  LIQUIDATION_IN_PROGRESS,
+  LIQUIDATED
+}
+
+enum BondedECDSAKeepState{
+  ACTIVE,
+  CLOSED,
+  TERMINATED 
+}
+
+enum DepositState{
+  AWAITING_SIGNER_SETUP,
+  AWAITING_BTC_FUNDING_PROOF,
+  LIQUIDATED,
+  REDEEMED,
+  SETUP_FAILED
 }
 
 type Transfer @entity {
@@ -24,20 +37,6 @@ type Transfer @entity {
   gasUsed: BigInt
 }
 
-type TBTCToken @entity{
-  id: ID!
-  name: String!
-  symbol: String!
-  decimals: Int!
-  address: Bytes!
-  totalSupply: BigDecimal!
-  maxSupply: BigInt!
-  totalTokenHolders: BigInt!
-  currentTokenHolders: BigInt!
-  totalMint: BigDecimal!
-  totalBurn: BigDecimal!
-}
-
 type TokenHolder @entity{
   id: ID!
   "KEEP Token balance of this address expressed in the smallest unit of the KEEP Token"
@@ -48,6 +47,21 @@ type TokenHolder @entity{
   totalTokensHeldRaw: BigInt!
   "Total amount of KEEP Token ever held by this address expressed as a BigDecimal normalized value for the KEEP Token"
   totalTokensHeld: BigDecimal!
+  tbtcToken : TBTCToken!
+}
+
+type TBTCToken @entity{
+  id: ID!
+  name: String!
+  symbol: String!
+  decimals: Int!
+  address: Bytes!
+  totalSupply: BigDecimal
+  maxSupply: BigInt
+  currentTokenHolders: BigInt
+  totalMint: BigDecimal
+  totalBurn: BigDecimal
+  holders: [TokenHolder!] @derivedFrom(field: "tbtcToken")
 }
 
 type Mint @entity{
@@ -58,36 +72,74 @@ type Mint @entity{
   amount : BigDecimal!
 }
 
-type Burn @entity{
-  id: ID!
-  timestamp: BigInt!
-  transaction : Transaction
-  from : Bytes
-  amount: BigDecimal!
-}
-
 type Transaction @entity{
   id: ID!,
   timestamp: BigInt!
   blockNumber: BigInt!
   mint: [Mint!] @derivedFrom(field: "transaction")
-  burn: [Burn!] @derivedFrom(field: "transaction")
+  burn: [DepositRedemption!] @derivedFrom(field: "transaction")
+}
+
+type Deposit @entity{
+  id: ID!
+  tbtcToken: TBTCToken
+  timestamp : BigInt,
+  signerFeeDivisor : BigInt,
+  state : DepositState!,
+  lotSize : [BigInt!],
+  initialCollateralizedPercent : BigInt,
+  undercollateralizedThresholdPercent : BigInt,
+  severelyUndercollateralizedThresholdPercent : BigInt,
+  remainingPauseTerm : BigInt,
+  depositRedemption : DepositRedemption @derivedFrom(field: "deposit")
+  depositLiquidation : DepositLiquidation  @derivedFrom(field: "deposit")
 }
 
 type DepositRedemption @entity{
   id: ID!
   transaction: Transaction
-  depositContractAddress: Bytes!,
-  digest: Bytes!,
-  outpoint : Bytes!,
-  redeemerOutputScript: Bytes!,
-  requestedFee : BigInt!,
-  requester : Bytes!,
+  depositContractAddress: Bytes,
+  digest: Bytes,
+  outpoint : Bytes,
+  redeemerOutputScript: Bytes,
+  requestedFee : BigInt,
+  requester : Bytes,
   utxoSize : BigInt!,
   state: RedemptionState
+  timestamp: BigInt!
+  txid: Bytes
+  deposit: Deposit!
+}
+
+type DepositLiquidation @entity{
+  id: ID!
+  transaction: Transaction
+  wasFraud : Boolean
+  state: LiquidationState
+  timestamp: BigInt!
+  deposit : Deposit!
 }
 
 type AllowNewDepositsUpdated @entity{
   id:ID!
   allowNewDepositsUpdated: Boolean
+}
+
+type BondedECDSAKeep @entity{
+  "Owner address"
+  id:ID!,
+  transaction: Transaction!
+  keepAddress: Bytes
+  bondAmount: BigDecimal!
+  honestThreshold : BigInt
+  timestamp: BigInt!
+  openKeepFeeEstimate: BigDecimal
+  state : BondedECDSAKeepState!
+  members: [Member!] @derivedFrom(field: "bondedECDSAKeep")
+}
+
+type Member @entity{
+  "Keep member address"
+  id: ID!
+  bondedECDSAKeep: [BondedECDSAKeep!] 
 }

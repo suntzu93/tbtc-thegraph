@@ -1,13 +1,15 @@
 import {
-  Approval,
   Transfer,
   TokenHolder,
   TBTCToken,
   Transaction,
   Mint,
-  Burn,
   DepositRedemption,
-  AllowNewDepositsUpdated
+  DepositLiquidation,
+  AllowNewDepositsUpdated,
+  BondedECDSAKeep,
+  Member,
+  Deposit
 } from "../../generated/schema";
 
 import { DEFAULT_DECIMALS } from "./decimals";
@@ -18,10 +20,9 @@ import {
   BIGINT_ONE,
   BIGDECIMAL_ZERO,
   TBTC_CONTRACT,
-  BYTE_ZERO,
   MAX_SUPPLY
 } from "./contants";
-import { Bytes , Address} from "@graphprotocol/graph-ts";
+import { Bytes , Address, log} from "@graphprotocol/graph-ts";
 
 export function getOrCreateTransaction(id: string): Transaction{
   let transaction = Transaction.load(id);
@@ -34,57 +35,30 @@ export function getOrCreateTransaction(id: string): Transaction{
   return transaction as Transaction;
 }
 
-export function getOrCreateApproval
-  (id: string): Approval {
-  let approval = Approval.load(id);
-  if (approval == null) {
-    approval = new Approval(id);
-  }
-  approval.value = BIGINT_ZERO;
-  approval.timestamp = BIGINT_ZERO;
-  let transaction = getOrCreateTransaction(id);
-  approval.transaction = transaction.id;
-  approval.save();
-  return approval as Approval;
-}
-
 export function getOrCreateTransfer
   (id: string): Transfer {
   let transfer = Transfer.load(id);
   if (transfer == null) {
     transfer = new Transfer(id);
+    transfer.value = BIGDECIMAL_ZERO;
+    transfer.timestamp = BIGINT_ZERO;
+    let transaction = getOrCreateTransaction(id);
+    transfer.transaction = transaction.id;
   }
-  transfer.value = BIGDECIMAL_ZERO;
-  transfer.timestamp = BIGINT_ZERO;
-  let transaction = getOrCreateTransaction(id);
-  transfer.transaction = transaction.id;
-  transfer.save();
   return transfer as Transfer; 
 }
 
 export function getOrCreateTokenHolder(
-  id: String,
-  createIfNotFound: boolean = true,
-  save: boolean = true
+  id: String
 ): TokenHolder {
   let tokenHolder = TokenHolder.load(id.toString());
 
-  if (tokenHolder == null && createIfNotFound) {
+  if (tokenHolder == null) {
     tokenHolder = new TokenHolder(id.toString());
     tokenHolder.tokenBalanceRaw = BIGINT_ZERO;
     tokenHolder.tokenBalance = BIGDECIMAL_ZERO;
     tokenHolder.totalTokensHeldRaw = BIGINT_ZERO;
     tokenHolder.totalTokensHeld = BIGDECIMAL_ZERO;
-
-    if (id != ZERO_ADDRESS) {
-      let governance = getTbtcTokenEntity();
-      governance.totalTokenHolders = governance.totalTokenHolders.plus(BIGINT_ONE);
-      governance.save();
-    }
-
-    if (save) {
-      tokenHolder.save();
-    }
   }
 
   return tokenHolder as TokenHolder;
@@ -95,7 +69,6 @@ export function getTbtcTokenEntity(): TBTCToken {
 
   if (tBtcToken == null) {
     tBtcToken = new TBTCToken("TBTCToken");
-    tBtcToken.totalTokenHolders = BIGINT_ZERO;
     tBtcToken.currentTokenHolders = BIGINT_ZERO;
     tBtcToken.decimals = DEFAULT_DECIMALS;
     tBtcToken.name = "tBTC Network";
@@ -110,60 +83,74 @@ export function getTbtcTokenEntity(): TBTCToken {
   return tBtcToken as TBTCToken;
 }
 
-export function getOrCreateMint(id: string): Mint {
-  let mint = Mint.load(id);
-  if (mint == null) {
-    mint = new Mint(id);
-  }
-  mint.amount = BIGDECIMAL_ZERO;
-  mint.timestamp = BIGINT_ZERO;
-  let transaction = getOrCreateTransaction(id);
-  mint.transaction = transaction.id
-  return mint as Mint;
-}
-
-export function getOrCreateBurn(id: string): Burn {
-  let burn = Burn.load(id);
-  if (burn == null) {
-    burn = new Burn(id);
-  }
-  burn.timestamp = BIGINT_ZERO;
-  let transaction = getOrCreateTransaction(id);
-  burn.transaction = transaction.id
-  return burn as Burn;
-}
-
 export function getOrCreateAllowNewDepositsUpdated(): AllowNewDepositsUpdated {
   let id = "AllowNewDepositsUpdated";
   let allowNewDepositsUpdated = AllowNewDepositsUpdated.load(id);
   if (allowNewDepositsUpdated == null) {
     allowNewDepositsUpdated = new AllowNewDepositsUpdated(id);
+    allowNewDepositsUpdated.allowNewDepositsUpdated = true;
+    allowNewDepositsUpdated.save()
   }
-  allowNewDepositsUpdated.allowNewDepositsUpdated = true;
   return allowNewDepositsUpdated as AllowNewDepositsUpdated;
 }
-// id: ID!
-// transaction: Transaction
-// depositContractAddress: Bytes!,
-// digest: Bytes!,
-// outpoint : Bytes!,
-// redeemerOutputScript: Bytes!,
-// requestedFee : BigInt!,
-// requester : Bytes!,
-// utxoSize : BigInt!
+
+export function getOrCreateDeposit(id: string) : Deposit{
+  let deposit = Deposit.load(id);
+  if (deposit == null){
+    deposit = new Deposit(id);
+    deposit.timestamp = BIGINT_ZERO;
+    deposit.signerFeeDivisor = BIGINT_ZERO;
+    deposit.state = "AWAITING_SIGNER_SETUP";
+    deposit.lotSize = [];
+    deposit.initialCollateralizedPercent = BIGINT_ZERO;
+    deposit.undercollateralizedThresholdPercent = BIGINT_ZERO;
+    deposit.severelyUndercollateralizedThresholdPercent = BIGINT_ZERO;
+    deposit.remainingPauseTerm = BIGINT_ZERO;
+    deposit.tbtcToken = getTbtcTokenEntity().id;
+  }
+  return deposit as Deposit;
+}
+
 export function getOrCreateDepositRedemption(id: string): DepositRedemption{
   let depositRedemp = DepositRedemption.load(id);
   if(depositRedemp == null){
     depositRedemp = new DepositRedemption(id);
+    let transaction = getOrCreateTransaction(id);
+    depositRedemp.transaction = transaction.id
+    depositRedemp.requestedFee = BIGINT_ZERO;
+    depositRedemp.utxoSize = BIGINT_ZERO;
+    depositRedemp.timestamp = BIGINT_ZERO;
   }
-  let transaction = getOrCreateTransaction(id);
-  depositRedemp.transaction = transaction.id
-  depositRedemp.depositContractAddress = BYTE_ZERO;
-  depositRedemp.digest = BYTE_ZERO;
-  depositRedemp.outpoint = BYTE_ZERO;
-  depositRedemp.redeemerOutputScript = BYTE_ZERO;
-  depositRedemp.requestedFee = BIGINT_ZERO;
-  depositRedemp.requester = BYTE_ZERO;
-  depositRedemp.utxoSize = BIGINT_ZERO;
   return depositRedemp as DepositRedemption;
+}
+
+export function getOrCreateDepositLiquidation(id: string): DepositLiquidation{
+  let depositLiquidation = DepositLiquidation.load(id);
+  if(depositLiquidation == null){
+    depositLiquidation = new DepositLiquidation(id);
+    let transaction = getOrCreateTransaction(id);
+    depositLiquidation.transaction = transaction.id
+    depositLiquidation.timestamp = BIGINT_ZERO;
+  }
+  return depositLiquidation as DepositLiquidation;
+}
+
+export function getOrCreateEcdsaBonedKeep(id: string): BondedECDSAKeep{
+  let ecdsaBonedKeep = BondedECDSAKeep.load(id);
+  if(ecdsaBonedKeep == null){
+    ecdsaBonedKeep = new BondedECDSAKeep(id);
+    let transaction = getOrCreateTransaction(id);
+    ecdsaBonedKeep.transaction = transaction.id
+    ecdsaBonedKeep.timestamp = BIGINT_ZERO;
+    ecdsaBonedKeep.bondAmount = BIGDECIMAL_ZERO;
+  }
+  return ecdsaBonedKeep as BondedECDSAKeep;
+}
+
+export function getOrCreateKeepMember(id: string): Member{
+  let member = Member.load(id);
+  if(member == null){
+    member = new Member(id);
+  }
+  return member as Member;
 }

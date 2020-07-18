@@ -26,5 +26,5 @@ export function toDecimal(value: BigInt, decimals: number = DEFAULT_DECIMALS): B
 }
 
 export function toDecimalBtc(value: BigInt, decimals: number = DEFAULT_DECIMALS_BTC): BigDecimal {
-  return pow(value.toBigDecimal(),decimals);
+  return toDecimal(value,DEFAULT_DECIMALS_BTC);
 }
