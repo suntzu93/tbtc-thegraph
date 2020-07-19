@@ -9,7 +9,8 @@ import {
   AllowNewDepositsUpdated,
   BondedECDSAKeep,
   Member,
-  Deposit
+  Deposit,
+  TotalBondedECDSAKeep
 } from "../../generated/schema";
 
 import { DEFAULT_DECIMALS } from "./decimals";
@@ -133,6 +134,16 @@ export function getOrCreateDepositLiquidation(id: string): DepositLiquidation{
     depositLiquidation.timestamp = BIGINT_ZERO;
   }
   return depositLiquidation as DepositLiquidation;
+}
+
+export function getOrCreateTotalBondedECDSAKeep(): TotalBondedECDSAKeep{
+  let id = "TotalBonedEcdsaKeep"
+  let totalBoned = TotalBondedECDSAKeep.load(id);
+  if(totalBoned == null){
+    totalBoned = new TotalBondedECDSAKeep(id);
+    totalBoned.totalAmount = BIGDECIMAL_ZERO;
+  }
+  return totalBoned as TotalBondedECDSAKeep;
 }
 
 export function getOrCreateEcdsaBonedKeep(id: string): BondedECDSAKeep{

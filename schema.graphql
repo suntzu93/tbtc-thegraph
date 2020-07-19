@@ -76,8 +76,8 @@ type Transaction @entity{
   id: ID!,
   timestamp: BigInt!
   blockNumber: BigInt!
-  mint: [Mint!] @derivedFrom(field: "transaction")
-  burn: [DepositRedemption!] @derivedFrom(field: "transaction")
+  mints: [Mint!] @derivedFrom(field: "transaction")
+  burns: [DepositRedemption!] @derivedFrom(field: "transaction")
 }
 
 type Deposit @entity{
@@ -135,11 +135,16 @@ type BondedECDSAKeep @entity{
   timestamp: BigInt!
   openKeepFeeEstimate: BigDecimal
   state : BondedECDSAKeepState!
-  members: [Member!] @derivedFrom(field: "bondedECDSAKeep")
+  members: [Member!] @derivedFrom(field: "bondedECDSAKeeps")
+}
+
+type TotalBondedECDSAKeep @entity{
+  id: ID!
+  totalAmount : BigDecimal!
 }
 
 type Member @entity{
   "Keep member address"
   id: ID!
-  bondedECDSAKeep: [BondedECDSAKeep!] 
+  bondedECDSAKeeps: [BondedECDSAKeep!] 
 }

@@ -7,7 +7,8 @@ import {
 import {
   getOrCreateEcdsaBonedKeep,
   getOrCreateTransaction,
-  getOrCreateKeepMember
+  getOrCreateKeepMember,
+  getOrCreateTotalBondedECDSAKeep
 } from "./utils/helpers";
 import { toDecimal } from "./utils/decimals";
 
@@ -35,11 +36,15 @@ export function handleBondedECDSAKeepCreated(
   for(let  i = 0; i< members.length;i++){
     var memberAddress = members[i].toHex();
     let memberEntity = getOrCreateKeepMember(memberAddress);
-    let keeps = memberEntity.bondedECDSAKeep
+    let keeps = memberEntity.bondedECDSAKeeps
     keeps.push(ecdsaBonedKeepFactory.id)
-    memberEntity.bondedECDSAKeep = keeps
+    memberEntity.bondedECDSAKeeps = keeps
     memberEntity.save()
   }
+
+  let totalBonded = getOrCreateTotalBondedECDSAKeep();
+  totalBonded.totalAmount  = totalBonded.totalAmount.plus(toDecimal(event.transaction.value));
+  totalBonded.save()
 }
 
 export function handleSortitionPoolCreated(event: SortitionPoolCreated): void {}
