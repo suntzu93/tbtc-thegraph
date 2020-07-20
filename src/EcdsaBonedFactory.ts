@@ -5,6 +5,7 @@ import {
 } from "../generated/ECDSABondedContractFactory/ECDSABondedContractFactory"
 
 import {
+  getOrCreateDeposit,
   getOrCreateEcdsaBonedKeep,
   getOrCreateTransaction,
   getOrCreateKeepMember,
@@ -19,10 +20,14 @@ export function handleBondedECDSAKeepCreated(
   transaction.timestamp = event.block.timestamp;
   transaction.blockNumber = event.block.number;
   transaction.save();
-  
+
   let contract = ECDSABondedContractFactory.bind(event.address)
   let ownerAdds = event.params.owner.toHex();
   let ecdsaBonedKeepFactory = getOrCreateEcdsaBonedKeep(ownerAdds);
+  //Update keepAddress for deposit
+  let deposit = getOrCreateDeposit(ownerAdds);
+  deposit.keepAddress = event.params.keepAddress;
+  deposit.save()
   ecdsaBonedKeepFactory.honestThreshold = event.params.honestThreshold;
   ecdsaBonedKeepFactory.timestamp = event.block.timestamp;
   ecdsaBonedKeepFactory.transaction = transaction.id;
@@ -30,6 +35,7 @@ export function handleBondedECDSAKeepCreated(
   ecdsaBonedKeepFactory.keepAddress = event.params.keepAddress;
   ecdsaBonedKeepFactory.openKeepFeeEstimate = toDecimal(contract.openKeepFeeEstimate());
   ecdsaBonedKeepFactory.state = "ACTIVE";
+  ecdsaBonedKeepFactory.deposit = deposit.id;
   ecdsaBonedKeepFactory.save();
 
   let members = event.params.members;
