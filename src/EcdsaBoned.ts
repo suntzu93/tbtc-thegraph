@@ -4,6 +4,7 @@ import {
 } from "../generated/ECDSABondedContract/ECDSABondedContract"
 
 import {
+  Deposit,
   BondedECDSAKeep
 } from "../generated/schema";
 
@@ -13,16 +14,21 @@ import {
 
 export function handleKeepClosed(event: KeepClosed): void {
   let ownerAddress = event.transaction.to.toHex();
-  let bondedEcdsaKeep = BondedECDSAKeep.load(ownerAddress);
-  if (bondedEcdsaKeep != null) {
-    let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
-    transaction.timestamp = event.block.timestamp;
-    transaction.blockNumber = event.block.number;
-    transaction.save();
-  
-    bondedEcdsaKeep.state = "CLOSED";
-    bondedEcdsaKeep.transaction = transaction.id;
-    bondedEcdsaKeep.save()
+  let deposit = Deposit.load(ownerAddress);
+  if (deposit != null && deposit.keepAddress != null){
+    let bondedEcdsaKeep = BondedECDSAKeep.load(deposit.keepAddress.toHex());
+    if (bondedEcdsaKeep != null) {
+      let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
+      transaction.timestamp = event.block.timestamp;
+      transaction.blockNumber = event.block.number;
+      transaction.from = event.transaction.from;
+      transaction.to = event.transaction.to;
+      transaction.save();
+    
+      bondedEcdsaKeep.state = "CLOSED";
+      bondedEcdsaKeep.transaction = transaction.id;
+      bondedEcdsaKeep.save()
+    }
   }
 }
 
@@ -33,6 +39,8 @@ export function handleKeepTerminated(event: KeepTerminated): void {
     let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
     transaction.timestamp = event.block.timestamp;
     transaction.blockNumber = event.block.number;
+    transaction.from = event.transaction.from;
+    transaction.to = event.transaction.to;
     transaction.save();
   
     bondedEcdsaKeep.state = "TERMINATED";

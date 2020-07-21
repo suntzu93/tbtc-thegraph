@@ -43,8 +43,7 @@ export function getOrCreateTransfer
     transfer = new Transfer(id);
     transfer.value = BIGDECIMAL_ZERO;
     transfer.timestamp = BIGINT_ZERO;
-    let transaction = getOrCreateTransaction(id);
-    transfer.transaction = transaction.id;
+    transfer.blockNumber = BIGINT_ZERO;
   }
   return transfer as Transfer; 
 }
@@ -102,12 +101,13 @@ export function getOrCreateDeposit(id: string) : Deposit{
     deposit.timestamp = BIGINT_ZERO;
     deposit.signerFeeDivisor = BIGINT_ZERO;
     deposit.state = "AWAITING_SIGNER_SETUP";
-    deposit.lotSize = [];
+    deposit.lotSize = BIGINT_ZERO;
     deposit.initialCollateralizedPercent = BIGINT_ZERO;
     deposit.undercollateralizedThresholdPercent = BIGINT_ZERO;
     deposit.severelyUndercollateralizedThresholdPercent = BIGINT_ZERO;
     deposit.remainingPauseTerm = BIGINT_ZERO;
     deposit.tbtcToken = getTbtcTokenEntity().id;
+    deposit.utxoSize = BIGDECIMAL_ZERO;
   }
   return deposit as Deposit;
 }
@@ -119,7 +119,7 @@ export function getOrCreateDepositRedemption(id: string): DepositRedemption{
     let transaction = getOrCreateTransaction(id);
     depositRedemp.transaction = transaction.id
     depositRedemp.requestedFee = BIGINT_ZERO;
-    depositRedemp.utxoSize = BIGINT_ZERO;
+    depositRedemp.utxoSize = BIGDECIMAL_ZERO;
     depositRedemp.timestamp = BIGINT_ZERO;
   }
   return depositRedemp as DepositRedemption;

@@ -161,4 +161,42 @@ dataSources:
         - event: KeepTerminated()
           handler: handleKeepTerminated
       file: ./src/EcdsaBoned.ts
-    
+  - kind: ethereum/contract
+    name: DepositFactoryContract
+    network: mainnet
+    source:
+      address: "0xC368E6b40ee31dd22C00ede41Ce02848c4718f5D"
+      abi: DepositFactoryContract
+      startBlock: 10071349
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DepositCloneCreated
+      abis:
+        - name: DepositFactoryContract
+          file: ./abis/DepositFactoryContract.json
+      eventHandlers:
+        - event: DepositCloneCreated(address)
+          handler: handleDepositCloneCreated
+      file: ./src/DepositFactory.ts
+templates:
+  - name: DepositContract
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: DepositContract
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/Deposit.ts
+      entities:
+        - CreateNewDeposit
+      abis:
+        - name: DepositContract
+          file: ./abis/DepositContract.json
+      callHandlers:
+        - function: createNewDeposit(address,address,address,address,address,uint16,uint16,uint64)
+          handler: handleCreateNewDeposit
