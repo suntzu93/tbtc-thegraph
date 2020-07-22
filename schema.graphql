@@ -1,7 +1,7 @@
 enum RedemptionState{
   AWAITING_WITHDRAWAL_SIGNATURE,
   AWAITING_WITHDRAWAL_PROOF,
-  REDEEMED_ERROR_MOVE_TO_LIQUIDATION,
+  REDEEMED_ERROR_MOVE_TO_LIQUIDATION
   REDEEMED
 }
 
@@ -73,7 +73,7 @@ type Mint @entity{
 }
 
 type Transaction @entity{
-  id: ID!
+  id: ID!,
   timestamp: BigInt!
   blockNumber: BigInt!
   mints: [Mint!] @derivedFrom(field: "transaction")
@@ -83,17 +83,14 @@ type Transaction @entity{
 type Deposit @entity{
   id: ID!
   tbtcToken: TBTCToken
-  timestamp : BigInt
-  signerFeeDivisor : BigInt
-  state : DepositState!
-  lotSize : [BigInt!]
-  utxoSize: BigDecimal
-  keepAddress: Bytes
-  initialCollateralizedPercent : BigInt
-  undercollateralizedThresholdPercent : BigInt
-  severelyUndercollateralizedThresholdPercent : BigInt
-  remainingPauseTerm : BigInt
-  bondedECDSAKeep: BondedECDSAKeep @derivedFrom(field: "deposit")
+  timestamp : BigInt,
+  signerFeeDivisor : BigInt,
+  state : DepositState!,
+  lotSize : [BigInt!],
+  initialCollateralizedPercent : BigInt,
+  undercollateralizedThresholdPercent : BigInt,
+  severelyUndercollateralizedThresholdPercent : BigInt,
+  remainingPauseTerm : BigInt,
   depositRedemption : DepositRedemption @derivedFrom(field: "deposit")
   depositLiquidation : DepositLiquidation  @derivedFrom(field: "deposit")
 }
@@ -101,13 +98,13 @@ type Deposit @entity{
 type DepositRedemption @entity{
   id: ID!
   transaction: Transaction
-  depositContractAddress: Bytes
-  digest: Bytes
-  outpoint : Bytes
-  redeemerOutputScript: Bytes
-  requestedFee : BigInt
-  requester : Bytes
-  utxoSize : BigDecimal
+  depositContractAddress: Bytes,
+  digest: Bytes,
+  outpoint : Bytes,
+  redeemerOutputScript: Bytes,
+  requestedFee : BigInt,
+  requester : Bytes,
+  utxoSize : BigInt!,
   state: RedemptionState
   timestamp: BigInt!
   txid: Bytes
@@ -130,7 +127,7 @@ type AllowNewDepositsUpdated @entity{
 
 type BondedECDSAKeep @entity{
   "Owner address"
-  id:ID!
+  id:ID!,
   transaction: Transaction!
   keepAddress: Bytes
   bondAmount: BigDecimal!
@@ -138,7 +135,6 @@ type BondedECDSAKeep @entity{
   timestamp: BigInt!
   openKeepFeeEstimate: BigDecimal
   state : BondedECDSAKeepState!
-  deposit: Deposit 
   members: [Member!] @derivedFrom(field: "bondedECDSAKeeps")
 }
 

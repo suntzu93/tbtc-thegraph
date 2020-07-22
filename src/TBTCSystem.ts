@@ -22,8 +22,6 @@ import {
   getTbtcTokenEntity
 } from "./utils/helpers";
 
-import { toDecimalBtc } from "./utils/decimals";
-
 export function handleCreated (event: Created): void {
   let depositContractAddress = event.params._depositContractAddress.toHex();
   let deposit = getOrCreateDeposit(depositContractAddress);
@@ -74,7 +72,6 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   deposit.lotSize = systemContract.getAllowedLotSizes();
   deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
   deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
-  deposit.utxoSize = toDecimalBtc(event.params._utxoSize);
   deposit.state = "AWAITING_SIGNER_SETUP";
   deposit.save()
 
@@ -87,7 +84,7 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   depositRedemp.redeemerOutputScript = event.params._redeemerOutputScript;
   depositRedemp.requestedFee = event.params._requestedFee;
   depositRedemp.requester = event.params._requester;
-  depositRedemp.utxoSize = toDecimalBtc(event.params._utxoSize);
+  depositRedemp.utxoSize = event.params._utxoSize;
   depositRedemp.state = "AWAITING_WITHDRAWAL_SIGNATURE";
   depositRedemp.timestamp = event.block.timestamp;
   depositRedemp.deposit = deposit.id;

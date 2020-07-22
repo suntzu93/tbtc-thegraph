@@ -119,7 +119,7 @@ export function getOrCreateDepositRedemption(id: string): DepositRedemption{
     let transaction = getOrCreateTransaction(id);
     depositRedemp.transaction = transaction.id
     depositRedemp.requestedFee = BIGINT_ZERO;
-    depositRedemp.utxoSize = BIGDECIMAL_ZERO;
+    depositRedemp.utxoSize = BIGINT_ZERO;
     depositRedemp.timestamp = BIGINT_ZERO;
   }
   return depositRedemp as DepositRedemption;
