@@ -21,22 +21,31 @@ import {
   getOrCreateDeposit,
   getTbtcTokenEntity
 } from "./utils/helpers";
+import { toDecimal, toDecimalBtc } from "./utils/decimals";
 
 export function handleCreated (event: Created): void {
+  let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
+  transaction.timestamp = event.block.timestamp;
+  transaction.blockNumber = event.block.number;
+  transaction.from = event.transaction.from;
+  transaction.to = event.transaction.to;
+  transaction.save()
+
   let depositContractAddress = event.params._depositContractAddress.toHex();
   let deposit = getOrCreateDeposit(depositContractAddress);
   let tbtcToken = getTbtcTokenEntity();
+  let systemContract = TBTCSystemContract.bind(event.address);
   deposit.tbtcToken = tbtcToken.id;
   deposit.timestamp = event.block.timestamp;
-
-  let systemContract = TBTCSystemContract.bind(event.address);
+  deposit.transaction = transaction.id;
   deposit.initialCollateralizedPercent =  BigInt.fromI32(systemContract.getInitialCollateralizedPercent());
   deposit.remainingPauseTerm = systemContract.try_getRemainingPauseTerm() as BigInt;
   deposit.signerFeeDivisor = BigInt.fromI32(systemContract.getSignerFeeDivisor());
-  deposit.lotSize = systemContract.getAllowedLotSizes();
+  // deposit.lotSize = systemContract.getAllowedLotSizes();
   deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
   deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
   deposit.state = "AWAITING_SIGNER_SETUP";
+  deposit.owner = event.transaction.from;
   deposit.save()
 }
 
@@ -59,20 +68,24 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   let transaction = getOrCreateTransaction(id)
   transaction.timestamp = event.block.timestamp;
   transaction.blockNumber = event.block.number;
-
+  transaction.from = event.transaction.from;
+  transaction.to = event.transaction.to;
+  transaction.save()
   //Save deposit 
   let deposit = getOrCreateDeposit(event.params._depositContractAddress.toHex());
   let tbtcToken = getTbtcTokenEntity();
   deposit.tbtcToken = tbtcToken.id;
   deposit.timestamp = event.block.timestamp;
   let systemContract = TBTCSystemContract.bind(event.address);
+  let depositContract =
   deposit.initialCollateralizedPercent =  BigInt.fromI32(systemContract.getInitialCollateralizedPercent());
   deposit.remainingPauseTerm = systemContract.try_getRemainingPauseTerm() as BigInt;
   deposit.signerFeeDivisor = BigInt.fromI32(systemContract.getSignerFeeDivisor());
-  deposit.lotSize = systemContract.getAllowedLotSizes();
+  // deposit.lotSize = systemContract.getAllowedLotSizes();
   deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
   deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
   deposit.state = "AWAITING_SIGNER_SETUP";
+  deposit.utxoSize = toDecimalBtc(event.params._utxoSize);
   deposit.save()
 
   //DepositRedemption Info
@@ -84,7 +97,7 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   depositRedemp.redeemerOutputScript = event.params._redeemerOutputScript;
   depositRedemp.requestedFee = event.params._requestedFee;
   depositRedemp.requester = event.params._requester;
-  depositRedemp.utxoSize = event.params._utxoSize;
+  depositRedemp.utxoSize = toDecimalBtc(event.params._utxoSize);
   depositRedemp.state = "AWAITING_WITHDRAWAL_SIGNATURE";
   depositRedemp.timestamp = event.block.timestamp;
   depositRedemp.deposit = deposit.id;
@@ -107,6 +120,14 @@ export function handleRedeemed(event: Redeemed): void {
   deposit.state = "REDEEMED";
   deposit.save();
 
+  let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
+  transaction.timestamp = event.block.timestamp;
+  transaction.blockNumber = event.block.number;
+  transaction.from = event.transaction.from;
+  transaction.to = event.transaction.to;
+  transaction.save()
+
+  depositRedemp.transaction = transaction.id;
   depositRedemp.state = "REDEEMED";
   depositRedemp.txid = event.params._txid;
   depositRedemp.timestamp = event.block.timestamp
@@ -141,6 +162,8 @@ export function handleLiquidated(event: Liquidated): void {
   let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
   transaction.timestamp = event.block.timestamp;
   transaction.blockNumber = event.block.number;
+  transaction.from = event.transaction.from;
+  transaction.to = event.transaction.to;
   depositLiquidation.transaction = transaction.id;
   depositLiquidation.timestamp = event.block.timestamp
   depositLiquidation.state = "LIQUIDATED";

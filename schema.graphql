@@ -29,7 +29,7 @@ enum DepositState{
 type Transfer @entity {
   id: ID!
   timestamp: BigInt!
-  transaction: Transaction
+  blockNumber: BigInt!
   value: BigDecimal!
   from: Bytes
   to: Bytes
@@ -73,24 +73,33 @@ type Mint @entity{
 }
 
 type Transaction @entity{
-  id: ID!,
+  id: ID!
   timestamp: BigInt!
   blockNumber: BigInt!
+  from: Bytes
+  to: Bytes
   mints: [Mint!] @derivedFrom(field: "transaction")
   burns: [DepositRedemption!] @derivedFrom(field: "transaction")
+  deposit: Deposit @derivedFrom(field: "transaction")
 }
 
 type Deposit @entity{
+  "Deposite Contract Address"
   id: ID!
   tbtcToken: TBTCToken
-  timestamp : BigInt,
-  signerFeeDivisor : BigInt,
-  state : DepositState!,
-  lotSize : [BigInt!],
-  initialCollateralizedPercent : BigInt,
-  undercollateralizedThresholdPercent : BigInt,
-  severelyUndercollateralizedThresholdPercent : BigInt,
-  remainingPauseTerm : BigInt,
+  timestamp : BigInt
+  transaction: Transaction
+  signerFeeDivisor : BigInt
+  state : DepositState!
+  lotSize : BigInt
+  initialCollateralizedPercent : BigInt
+  undercollateralizedThresholdPercent : BigInt
+  severelyUndercollateralizedThresholdPercent : BigInt
+  remainingPauseTerm : BigInt
+  owner : Bytes
+  utxoSize: BigDecimal
+  keepAddress: Bytes
+  bondedECDSAKeep: BondedECDSAKeep @derivedFrom(field: "deposit")
   depositRedemption : DepositRedemption @derivedFrom(field: "deposit")
   depositLiquidation : DepositLiquidation  @derivedFrom(field: "deposit")
 }
@@ -98,13 +107,13 @@ type Deposit @entity{
 type DepositRedemption @entity{
   id: ID!
   transaction: Transaction
-  depositContractAddress: Bytes,
-  digest: Bytes,
-  outpoint : Bytes,
-  redeemerOutputScript: Bytes,
-  requestedFee : BigInt,
-  requester : Bytes,
-  utxoSize : BigInt!,
+  depositContractAddress: Bytes
+  digest: Bytes
+  outpoint : Bytes
+  redeemerOutputScript: Bytes
+  requestedFee : BigInt
+  requester : Bytes
+  utxoSize : BigDecimal!
   state: RedemptionState
   timestamp: BigInt!
   txid: Bytes
@@ -127,7 +136,8 @@ type AllowNewDepositsUpdated @entity{
 
 type BondedECDSAKeep @entity{
   "Owner address"
-  id:ID!,
+  id:ID!
+  owner: Bytes!
   transaction: Transaction!
   keepAddress: Bytes
   bondAmount: BigDecimal!
@@ -135,7 +145,9 @@ type BondedECDSAKeep @entity{
   timestamp: BigInt!
   openKeepFeeEstimate: BigDecimal
   state : BondedECDSAKeepState!
-  members: [Member!] @derivedFrom(field: "bondedECDSAKeeps")
+  deposit: Deposit!
+  keepBonding: KeepBonding! @derivedFrom(field: "bondedECDSAKeep")
+  operators: [Member!] @derivedFrom(field: "bondedECDSAKeeps")
 }
 
 type TotalBondedECDSAKeep @entity{
@@ -146,5 +158,25 @@ type TotalBondedECDSAKeep @entity{
 type Member @entity{
   "Keep member address"
   id: ID!
-  bondedECDSAKeeps: [BondedECDSAKeep!] 
+  bondedECDSAKeeps: [BondedECDSAKeep!]!
+}
+
+type KeepBonding @entity{
+  id: ID!
+  holder: Bytes
+  operator: [Operator!] @derivedFrom(field: "keeps")
+  referenceID: BigInt
+  sortitionPool: Bytes!
+  totalDeposit: BigDecimal
+  unboundAvailable: BigDecimal
+  bondedECDSAKeep: BondedECDSAKeep
+  timestamp: BigInt
+}
+
+type Operator @entity{
+  "operator address"
+  id: ID!
+  totalUnboundAvailable: BigDecimal
+  referenceID: BigInt
+  keeps: [KeepBonding!]
 }

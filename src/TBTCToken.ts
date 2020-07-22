@@ -30,16 +30,13 @@ export function handleTransfer(event: Transfer): void {
   let tBtcToken = getTbtcTokenEntity();
 
   //Transfer
-  transaction.blockNumber = event.block.number;
-  transaction.timestamp = event.block.timestamp;
-  transfer.transaction = transaction.id;
+  transfer.blockNumber = event.block.number;
   transfer.from = event.params.from;
   transfer.to = event.params.to;
   transfer.value = toDecimal(event.params.value);
   transfer.timestamp = transaction.timestamp;
   transfer.gasPrice = event.transaction.gasPrice;
   transfer.gasUsed = event.transaction.gasUsed;
-  transaction.save()
   transfer.save()
 
   // fromHolder
@@ -67,6 +64,12 @@ export function handleTransfer(event: Transfer): void {
   } else {
     //Increase total Mint
     tBtcToken.totalMint = tBtcToken.totalMint.plus(toDecimal(event.params.value));
+    transaction.timestamp = event.block.timestamp;
+    transaction.blockNumber = event.block.number;
+    transaction.from = event.transaction.from;
+    transaction.to = event.transaction.to;
+    transaction.save()
+
     //Save mint transaction
     var index = event.transaction.index;
     var hash = id + "-" + index.toString();

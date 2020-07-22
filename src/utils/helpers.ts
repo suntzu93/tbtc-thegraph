@@ -10,7 +10,9 @@ import {
   BondedECDSAKeep,
   Member,
   Deposit,
-  TotalBondedECDSAKeep
+  TotalBondedECDSAKeep,
+  KeepBonding,
+  Operator
 } from "../../generated/schema";
 
 import { DEFAULT_DECIMALS } from "./decimals";
@@ -43,8 +45,7 @@ export function getOrCreateTransfer
     transfer = new Transfer(id);
     transfer.value = BIGDECIMAL_ZERO;
     transfer.timestamp = BIGINT_ZERO;
-    let transaction = getOrCreateTransaction(id);
-    transfer.transaction = transaction.id;
+    transfer.blockNumber = BIGINT_ZERO;
   }
   return transfer as Transfer; 
 }
@@ -102,12 +103,13 @@ export function getOrCreateDeposit(id: string) : Deposit{
     deposit.timestamp = BIGINT_ZERO;
     deposit.signerFeeDivisor = BIGINT_ZERO;
     deposit.state = "AWAITING_SIGNER_SETUP";
-    deposit.lotSize = [];
+    deposit.lotSize = BIGINT_ZERO;
     deposit.initialCollateralizedPercent = BIGINT_ZERO;
     deposit.undercollateralizedThresholdPercent = BIGINT_ZERO;
     deposit.severelyUndercollateralizedThresholdPercent = BIGINT_ZERO;
     deposit.remainingPauseTerm = BIGINT_ZERO;
     deposit.tbtcToken = getTbtcTokenEntity().id;
+    deposit.utxoSize = BIGDECIMAL_ZERO;
   }
   return deposit as Deposit;
 }
@@ -119,7 +121,7 @@ export function getOrCreateDepositRedemption(id: string): DepositRedemption{
     let transaction = getOrCreateTransaction(id);
     depositRedemp.transaction = transaction.id
     depositRedemp.requestedFee = BIGINT_ZERO;
-    depositRedemp.utxoSize = BIGINT_ZERO;
+    depositRedemp.utxoSize = BIGDECIMAL_ZERO;
     depositRedemp.timestamp = BIGINT_ZERO;
   }
   return depositRedemp as DepositRedemption;
@@ -162,6 +164,37 @@ export function getOrCreateKeepMember(id: string): Member{
   let member = Member.load(id);
   if(member == null){
     member = new Member(id);
+    member.bondedECDSAKeeps = [];
   }
   return member as Member;
 }
+
+export function getOrCreateKeepBonding(id: string): KeepBonding{
+  let keepBonding = KeepBonding.load(id);
+  if(keepBonding == null){
+    keepBonding = new KeepBonding(id);
+    keepBonding.referenceID = BIGINT_ZERO;
+    keepBonding.totalDeposit = BIGDECIMAL_ZERO;
+    keepBonding.unboundAvailable = BIGDECIMAL_ZERO;
+  }
+  return keepBonding as KeepBonding;
+}
+
+export function getOrCreateOperator(id: string): Operator{
+  let operator = Operator.load(id);
+  if(operator == null){
+    operator = new Operator(id);
+    operator.referenceID = BIGINT_ZERO;
+    operator.totalUnboundAvailable = BIGDECIMAL_ZERO;
+    operator.keeps = [];
+  }
+  return operator as Operator;
+}
+
+// export function getOrCreateSortitionPool(id: string): SortitionPool{
+//   let sortitionPool = SortitionPool.load(id);
+//   if(sortitionPool == null){
+//     sortitionPool = new SortitionPool(id);
+//   }
+//   return sortitionPool as SortitionPool;
+// }
