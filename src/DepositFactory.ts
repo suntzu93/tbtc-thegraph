@@ -11,6 +11,4 @@ export function handleDepositCloneCreated(event: DepositCloneCreated): void {
   let context = new DataSourceContext();
   context.setString("depositAddress", event.params.depositCloneAddress.toHex())
   DepositContract.createWithContext(event.params.depositCloneAddress,context);
-  
-  log.debug("handleDepositCloneCreated owner = {}",[event.params.depositCloneAddress.toHex()])
 }

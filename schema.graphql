@@ -80,6 +80,7 @@ type Transaction @entity{
   to: Bytes
   mints: [Mint!] @derivedFrom(field: "transaction")
   burns: [DepositRedemption!] @derivedFrom(field: "transaction")
+  deposit: Deposit @derivedFrom(field: "transaction")
 }
 
 type Deposit @entity{
@@ -145,7 +146,8 @@ type BondedECDSAKeep @entity{
   openKeepFeeEstimate: BigDecimal
   state : BondedECDSAKeepState!
   deposit: Deposit!
-  members: [Member!] @derivedFrom(field: "bondedECDSAKeeps")
+  keepBonding: KeepBonding! @derivedFrom(field: "bondedECDSAKeep")
+  operators: [Member!] @derivedFrom(field: "bondedECDSAKeeps")
 }
 
 type TotalBondedECDSAKeep @entity{
@@ -156,5 +158,25 @@ type TotalBondedECDSAKeep @entity{
 type Member @entity{
   "Keep member address"
   id: ID!
-  bondedECDSAKeeps: [BondedECDSAKeep!] 
+  bondedECDSAKeeps: [BondedECDSAKeep!]!
+}
+
+type KeepBonding @entity{
+  id: ID!
+  holder: Bytes
+  operator: [Operator!] @derivedFrom(field: "keeps")
+  referenceID: BigInt
+  sortitionPool: Bytes!
+  totalDeposit: BigDecimal
+  unboundAvailable: BigDecimal
+  bondedECDSAKeep: BondedECDSAKeep
+  timestamp: BigInt
+}
+
+type Operator @entity{
+  "operator address"
+  id: ID!
+  totalUnboundAvailable: BigDecimal
+  referenceID: BigInt
+  keeps: [KeepBonding!]
 }
