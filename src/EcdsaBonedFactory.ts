@@ -18,6 +18,7 @@ import { toDecimal } from "./utils/decimals";
 export function handleBondedECDSAKeepCreated(
   event: BondedECDSAKeepCreated
 ): void {
+  
   let transaction = getOrCreateTransaction(event.transaction.hash.toHex());
   transaction.timestamp = event.block.timestamp;
   transaction.blockNumber = event.block.number;
@@ -43,9 +44,12 @@ export function handleBondedECDSAKeepCreated(
   deposit.save()
   ecdsaBonedKeepFactory.save();
 
-  let keepBonding = getOrCreateKeepBonding(keepAddress);
-  keepBonding.unboundAvailable = keepBonding.unboundAvailable.minus(toDecimal(event.transaction.value));
-  keepBonding.save()
+  log.error("handleBondedECDSAKeepCreated owner = {}, keepAddress = {}, amount = {}, txHash = {}",[
+    event.params.owner.toHex(),
+    event.params.keepAddress.toHex(),
+    toDecimal(event.transaction.value).toString(),
+    event.transaction.hash.toHex()
+  ])
 
   let members = event.params.members;
   for(let  i = 0; i< members.length;i++){

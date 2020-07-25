@@ -11,114 +11,102 @@ import {
 
 import {
   getOrCreateKeepBonding,
-  getOrCreateKeepMember,
-  getOrCreateOperator
+  getOrCreateKeepMember
 } from "./utils/helpers";
 import { toDecimal } from "./utils/decimals";
+import { BIGDECIMAL_ZERO } from "./utils/contants";
 
-
-// type KeepBonding @entity{
-//   id: ID!
-//   holder: Bytes
-//   operator: Bytes
-//   referenceID: BigInt
-//   sortitionPool: Bytes
-//   totalDeposit: BigDecimal
-//   unboundAvailable: BigDecimal
-//   bondedECDSAKeep: BondedECDSAKeep
-//   timestamp: BigInt
-// }
 export function handleBondCreated(event: BondCreated): void {
-  // let sortitionPool = getOrCreateSortitionPool(event.params.sortitionPool.toHex());
-  // sortitionPool.save()
-  // let operator = getOrCreateKeepMember(event.params.operator.toHex());
-
-  let keepBonding = getOrCreateKeepBonding(event.params.holder.toHex());
+  let contract = KeepBondingContract.bind(event.address);
+  let idKeepbonding = event.params.holder.toHex();
+  let keepBonding = getOrCreateKeepBonding(idKeepbonding);
   keepBonding.holder =event.params.holder;
   keepBonding.referenceID = event.params.referenceID;
   keepBonding.sortitionPool = event.params.sortitionPool;
-  keepBonding.unboundAvailable = keepBonding.unboundAvailable.plus(toDecimal(event.params.amount));
-  keepBonding.totalDeposit = keepBonding.totalDeposit.plus(toDecimal(event.params.amount));
+  keepBonding.lockedBond = keepBonding.lockedBond.plus(toDecimal(contract.bondAmount(event.params.operator,event.params.holder,event.params.referenceID)));
   keepBonding.bondedECDSAKeep =event.params.holder.toHex();
   keepBonding.save()
 
-  let operator = getOrCreateOperator(event.params.operator.toHex());
-  operator.referenceID = event.params.referenceID;
+  let operator = getOrCreateKeepMember(event.params.operator.toHex());
   let keeps = operator.keeps;
   keeps.push(keepBonding.id);
   operator.keeps = keeps;
-  operator.totalUnboundAvailable = operator.totalUnboundAvailable.plus(toDecimal(event.params.amount));
+  operator.totalUnboundAvailable = operator.totalUnboundAvailable.plus(toDecimal(contract.unbondedValue(event.params.operator)));
   operator.save()
 
-  log.error("handleBondCreated holder = {},amount ={} ,operator = {}, referenceID = {}, sortitionPool = {}",[
-    event.params.holder.toHex(),
-    event.params.amount.toString(),
-    event.params.operator.toHex(),
-    event.params.referenceID.toString(),
-    event.params.sortitionPool.toHex()
-  ])
-  
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.availableUnbondedValue(...)
-  // - contract.bondAmount(...)
-  // - contract.hasSecondaryAuthorization(...)
-  // - contract.unbondedValue(...)
+  // log.error("handleBondCreated holder = {},amount ={} ,operator = {}, referenceID = {}, sortitionPool = {}, txHash = {}, from = {}",[
+  //   event.params.holder.toHex(),
+  //   event.params.amount.toString(),
+  //   event.params.operator.toHex(),
+  //   event.params.referenceID.toString(),
+  //   event.params.sortitionPool.toHex(),
+  //   event.transaction.hash.toHex(),
+  //   event.transaction.from.toHex()
+  // ])
 }
 
 export function handleBondReassigned(event: BondReassigned): void {
-  log.error("handleBondReassigned holder = {},newReferenceID ={} ,operator = {}, referenceID = {}",[
-    event.params.newHolder.toHex(),
-    event.params.newReferenceID.toHex(),
-    event.params.operator.toHex(),
-    event.params.referenceID.toString()
-  ])
+  // log.error("handleBondReassigned holder = {},newReferenceID ={} ,operator = {}, referenceID = {}",[
+  //   event.params.newHolder.toHex(),
+  //   event.params.newReferenceID.toHex(),
+  //   event.params.operator.toHex(),
+  //   event.params.referenceID.toString()
+  // ])
 }
 
+// Chuyển từ locked sang avalible.
 export function handleBondReleased(event: BondReleased): void {
-  log.error("handleBondReleased operator = {}, referenceID = {}",[
-    event.params.operator.toHex(),
-    event.params.referenceID.toHex()
-  ])
+  let contract = KeepBondingContract.bind(event.address);
+  let operator = getOrCreateKeepMember(event.params.operator.toHex());
+  operator.totalUnboundAvailable = toDecimal(contract.unbondedValue(event.params.operator));
+  operator.save()
+
+  let idKeepbonding = event.params.referenceID.toString();
+  let keepBonding = getOrCreateKeepBonding(idKeepbonding);
+  keepBonding.lockedBond = BIGDECIMAL_ZERO;
+  keepBonding.save()
+
+  // log.error("handleBondReleased operator = {}, referenceID = {} , from = {}",[
+  //   event.params.operator.toHex(),
+  //   event.params.referenceID.toHex(),
+  //   event.transaction.from.toHex()
+  // ])
 }
 
 export function handleBondSeized(event: BondSeized): void {
-  log.error("handleBondSeized operator = {},referenceID ={} ,destination = {}, amount = {}",[
-    event.params.operator.toHex(),
-    event.params.referenceID.toHex(),
-    event.params.destination.toHex(),
-    event.params.amount.toString()
-  ])
+  let operator = getOrCreateKeepMember(event.params.operator.toHex());
+  operator.destination = event.params.destination;
+  operator.seizeAmount = toDecimal(event.params.amount);
+  operator.save()
 }
 
 export function handleUnbondedValueDeposited(
   event: UnbondedValueDeposited
 ): void {
-  log.error("UnbondedValueDeposited operator = {}, amount = {}",[
-    event.params.operator.toHex(),
-    toDecimal(event.params.amount).toString()
-  ])
+  let contract = KeepBondingContract.bind(event.address);
+  let operator = getOrCreateKeepMember(event.params.operator.toHex());
+  operator.totalUnboundAvailable = toDecimal(contract.unbondedValue(event.params.operator));
+  operator.save()
+
+  // log.error("UnbondedValueDeposited operator = {}, amount = {} , from = {} , to {}",[
+  //   event.params.operator.toHex(),
+  //   toDecimal(event.params.amount).toString(),
+  //   event.transaction.from.toHex(),
+  //   event.transaction.to.toHex()
+  // ])
 }
 
+// Rút 1 phần tiền từ bonding về ví cá nhân. Trừ của availible đi.
 export function handleUnbondedValueWithdrawn(
   event: UnbondedValueWithdrawn
 ): void {
-  log.error("UnbondedValueWithdrawn operator = {}, amount = {}",[
-    event.params.operator.toHex(),
-    toDecimal(event.params.amount).toString()
-  ])
+  let contract = KeepBondingContract.bind(event.address);
+  let operator = getOrCreateKeepMember(event.params.operator.toHex());
+  operator.totalUnboundAvailable = toDecimal(contract.unbondedValue(event.params.operator));
+  operator.save()
+
+  // log.error("UnbondedValueWithdrawn operator = {}, amount = {}",[
+  //   event.params.operator.toHex(),
+  //   toDecimal(event.params.amount).toString()
+  // ])
 }

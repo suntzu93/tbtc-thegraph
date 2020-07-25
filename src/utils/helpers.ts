@@ -11,8 +11,7 @@ import {
   Member,
   Deposit,
   TotalBondedECDSAKeep,
-  KeepBonding,
-  Operator
+  KeepBonding
 } from "../../generated/schema";
 
 import { DEFAULT_DECIMALS } from "./decimals";
@@ -165,6 +164,7 @@ export function getOrCreateKeepMember(id: string): Member{
   if(member == null){
     member = new Member(id);
     member.bondedECDSAKeeps = [];
+    member.keeps = [];
   }
   return member as Member;
 }
@@ -174,21 +174,9 @@ export function getOrCreateKeepBonding(id: string): KeepBonding{
   if(keepBonding == null){
     keepBonding = new KeepBonding(id);
     keepBonding.referenceID = BIGINT_ZERO;
-    keepBonding.totalDeposit = BIGDECIMAL_ZERO;
     keepBonding.unboundAvailable = BIGDECIMAL_ZERO;
   }
   return keepBonding as KeepBonding;
-}
-
-export function getOrCreateOperator(id: string): Operator{
-  let operator = Operator.load(id);
-  if(operator == null){
-    operator = new Operator(id);
-    operator.referenceID = BIGINT_ZERO;
-    operator.totalUnboundAvailable = BIGDECIMAL_ZERO;
-    operator.keeps = [];
-  }
-  return operator as Operator;
 }
 
 // export function getOrCreateSortitionPool(id: string): SortitionPool{

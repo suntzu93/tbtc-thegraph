@@ -9,7 +9,8 @@ import {
 } from "../generated/schema";
 
 import {
-  getOrCreateTotalBondedECDSAKeep
+  getOrCreateTotalBondedECDSAKeep,
+  getOrCreateTransaction
 } from "./utils/helpers";
 
 export function handleKeepClosed(event: KeepClosed): void {
