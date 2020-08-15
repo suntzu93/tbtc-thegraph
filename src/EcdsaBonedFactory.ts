@@ -44,13 +44,6 @@ export function handleBondedECDSAKeepCreated(
   deposit.save()
   ecdsaBonedKeepFactory.save();
 
-  log.error("handleBondedECDSAKeepCreated owner = {}, keepAddress = {}, amount = {}, txHash = {}",[
-    event.params.owner.toHex(),
-    event.params.keepAddress.toHex(),
-    toDecimal(event.transaction.value).toString(),
-    event.transaction.hash.toHex()
-  ])
-
   let members = event.params.members;
   for(let  i = 0; i< members.length;i++){
     var memberAddress = members[i].toHex();

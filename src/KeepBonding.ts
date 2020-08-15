@@ -33,28 +33,11 @@ export function handleBondCreated(event: BondCreated): void {
   operator.keeps = keeps;
   operator.totalUnboundAvailable = operator.totalUnboundAvailable.plus(toDecimal(contract.unbondedValue(event.params.operator)));
   operator.save()
-
-  // log.error("handleBondCreated holder = {},amount ={} ,operator = {}, referenceID = {}, sortitionPool = {}, txHash = {}, from = {}",[
-  //   event.params.holder.toHex(),
-  //   event.params.amount.toString(),
-  //   event.params.operator.toHex(),
-  //   event.params.referenceID.toString(),
-  //   event.params.sortitionPool.toHex(),
-  //   event.transaction.hash.toHex(),
-  //   event.transaction.from.toHex()
-  // ])
 }
 
 export function handleBondReassigned(event: BondReassigned): void {
-  // log.error("handleBondReassigned holder = {},newReferenceID ={} ,operator = {}, referenceID = {}",[
-  //   event.params.newHolder.toHex(),
-  //   event.params.newReferenceID.toHex(),
-  //   event.params.operator.toHex(),
-  //   event.params.referenceID.toString()
-  // ])
 }
 
-// Chuyển từ locked sang avalible.
 export function handleBondReleased(event: BondReleased): void {
   let contract = KeepBondingContract.bind(event.address);
   let operator = getOrCreateKeepMember(event.params.operator.toHex());
@@ -65,12 +48,6 @@ export function handleBondReleased(event: BondReleased): void {
   let keepBonding = getOrCreateKeepBonding(idKeepbonding);
   keepBonding.lockedBond = BIGDECIMAL_ZERO;
   keepBonding.save()
-
-  // log.error("handleBondReleased operator = {}, referenceID = {} , from = {}",[
-  //   event.params.operator.toHex(),
-  //   event.params.referenceID.toHex(),
-  //   event.transaction.from.toHex()
-  // ])
 }
 
 export function handleBondSeized(event: BondSeized): void {
@@ -87,16 +64,8 @@ export function handleUnbondedValueDeposited(
   let operator = getOrCreateKeepMember(event.params.operator.toHex());
   operator.totalUnboundAvailable = toDecimal(contract.unbondedValue(event.params.operator));
   operator.save()
-
-  // log.error("UnbondedValueDeposited operator = {}, amount = {} , from = {} , to {}",[
-  //   event.params.operator.toHex(),
-  //   toDecimal(event.params.amount).toString(),
-  //   event.transaction.from.toHex(),
-  //   event.transaction.to.toHex()
-  // ])
 }
 
-// Rút 1 phần tiền từ bonding về ví cá nhân. Trừ của availible đi.
 export function handleUnbondedValueWithdrawn(
   event: UnbondedValueWithdrawn
 ): void {
@@ -104,9 +73,4 @@ export function handleUnbondedValueWithdrawn(
   let operator = getOrCreateKeepMember(event.params.operator.toHex());
   operator.totalUnboundAvailable = toDecimal(contract.unbondedValue(event.params.operator));
   operator.save()
-
-  // log.error("UnbondedValueWithdrawn operator = {}, amount = {}",[
-  //   event.params.operator.toHex(),
-  //   toDecimal(event.params.amount).toString()
-  // ])
 }
