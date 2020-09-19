@@ -77,7 +77,6 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   deposit.tbtcToken = tbtcToken.id;
   deposit.timestamp = event.block.timestamp;
   let systemContract = TBTCSystemContract.bind(event.address);
-  let depositContract =
   deposit.initialCollateralizedPercent =  BigInt.fromI32(systemContract.getInitialCollateralizedPercent());
   deposit.remainingPauseTerm = systemContract.try_getRemainingPauseTerm() as BigInt;
   deposit.signerFeeDivisor = BigInt.fromI32(systemContract.getSignerFeeDivisor());

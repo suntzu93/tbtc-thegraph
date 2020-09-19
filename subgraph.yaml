@@ -6,9 +6,9 @@ dataSources:
     name: TBTCSystemContract
     network: mainnet
     source:
-      address: "0x41a1b40c1280883ea14c6a71e23bb66b83b3fb59"
+      address: "0xe20A5C79b39bC8C363f0f49ADcFa82C2a01ab64a"
       abi: TBTCSystemContract
-      startBlock: 10071347 
+      startBlock: 10867764 
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -98,9 +98,9 @@ dataSources:
     name: TBTCTokenContract
     network: mainnet
     source:
-      address: "0x1bbe271d15bb64df0bc6cd28df9ff322f2ebd847"
+      address: "0x8dAEBADE922dF735c38C80C7eBD708Af50815fAa"
       abi: TBTCTokenContract
-      startBlock: 10071373
+      startBlock: 10867840
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -119,9 +119,9 @@ dataSources:
     name: ECDSABondedContractFactory
     network: mainnet
     source:
-      address: "0x18758f16988E61Cd4B61E6B930694BD9fB07C22F"
+      address: "0xA7d9E842EFB252389d613dA88EDa3731512e40bD"
       abi: ECDSABondedContractFactory
-      startBlock : 10060494 
+      startBlock : 10860168 
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -139,35 +139,12 @@ dataSources:
           handler: handleSortitionPoolCreated
       file: ./src/EcdsaBonedFactory.ts
   - kind: ethereum/contract
-    name: ECDSABondedContract
-    network: mainnet
-    source:
-      abi: ECDSABondedContract
-      startBlock : 10060315
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - KeepClosed
-        - ERC20RewardDistributed
-        - SubmitSignature
-      abis:
-        - name: ECDSABondedContract
-          file: ./abis/ECDSABondedContract.json
-      eventHandlers:
-        - event: KeepClosed()
-          handler: handleKeepClosed
-        - event: KeepTerminated()
-          handler: handleKeepTerminated
-      file: ./src/EcdsaBoned.ts
-  - kind: ethereum/contract
     name: DepositFactoryContract
     network: mainnet
     source:
-      address: "0xC368E6b40ee31dd22C00ede41Ce02848c4718f5D"
+      address: "0x87EFFeF56C7fF13E2463b5d4dCE81bE2340FAf8b"
       abi: DepositFactoryContract
-      startBlock: 10071349
+      startBlock: 10867766 
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -185,9 +162,9 @@ dataSources:
     name: KeepBondingContract
     network: mainnet
     source:
-      address: "0x7137701e90C6a80B0dA36922cd83942b32A8fc95"
+      address: "0x27321f84704a599aB740281E285cc4463d89A3D5"
       abi: KeepBondingContract
-      startBlock: 10060306
+      startBlock: 10834319
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -238,3 +215,26 @@ templates:
       callHandlers:
         - function: createNewDeposit(address,address,address,address,address,uint16,uint16,uint64)
           handler: handleCreateNewDeposit
+  - kind: ethereum/contract
+    name: ECDSABondedContract
+    network: mainnet
+    source:
+      abi: ECDSABondedContract
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/EcdsaBoned.ts
+      entities:
+        - KeepClosed
+        - ERC20RewardDistributed
+        - SubmitSignature
+      abis:
+        - name: ECDSABondedContract
+          file: ./abis/ECDSABondedContract.json
+      callHandlers:
+        - function: KeepClosed()
+          handler: handleKeepClosed
+        - function: KeepTerminated()
+          handler: handleKeepTerminated
+      

@@ -39,6 +39,9 @@ export function handleTransfer(event: Transfer): void {
   transfer.gasUsed = event.transaction.gasUsed;
   transfer.save()
 
+  
+  let contract = TBTCTokenContract.bind(event.address)
+  tBtcToken.totalSupply = toDecimal(contract.totalSupply());
   // fromHolder
   if (event.params.from.toHexString() != ZERO_ADDRESS) {
     let fromHolderPreviousBalance = fromHolder.tokenBalanceRaw;
@@ -53,8 +56,6 @@ export function handleTransfer(event: Transfer): void {
       ]);
     }
 
-    let contract = TBTCTokenContract.bind(event.address)
-    tBtcToken.totalSupply = toDecimal(contract.totalSupply());
     if ( fromHolder.tokenBalanceRaw == BIGINT_ZERO && fromHolderPreviousBalance > BIGINT_ZERO) {
       tBtcToken.currentTokenHolders = tBtcToken.currentTokenHolders.minus(BIGINT_ONE);
     } else if ( fromHolder.tokenBalanceRaw > BIGINT_ZERO && fromHolderPreviousBalance == BIGINT_ZERO) {
