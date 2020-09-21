@@ -1,7 +1,8 @@
+import { BigInt , log} from "@graphprotocol/graph-ts"
 import {
   KeepClosed,
   KeepTerminated
-} from "../generated/ECDSABondedContract/ECDSABondedContract"
+} from "../generated/templates/ECDSABondedContract/ECDSABondedContract"
 
 import {
   BondedECDSAKeep,
@@ -12,6 +13,7 @@ import {
   getOrCreateTotalBondedECDSAKeep,
   getOrCreateTransaction
 } from "./utils/helpers";
+import { BIGINT_ONE } from "./utils/contants";
 
 export function handleKeepClosed(event: KeepClosed): void {
   let ownerAddress = event.transaction.to.toHex();
@@ -29,6 +31,14 @@ export function handleKeepClosed(event: KeepClosed): void {
       bondedEcdsaKeep.state = "CLOSED";
       bondedEcdsaKeep.transaction = transaction.id;
       bondedEcdsaKeep.save()
+
+      let totalBonded = getOrCreateTotalBondedECDSAKeep();
+      totalBonded.totalKeepActive  =  totalBonded.totalKeepActive - BIGINT_ONE;
+      totalBonded.save()
+
+      log.error("handleKeepClosed = transaction {}",[
+        event.transaction.hash.toHex()
+      ])
     }
   }
 }
@@ -48,6 +58,14 @@ export function handleKeepTerminated(event: KeepTerminated): void {
 
       bondedEcdsaKeep.state = "TERMINATED";
       bondedEcdsaKeep.save()
+
+      let totalBonded = getOrCreateTotalBondedECDSAKeep();
+      totalBonded.totalKeepActive  =  totalBonded.totalKeepActive - BIGINT_ONE;
+      totalBonded.save()
+
+      log.error("handleKeepTerminated = transaction {}",[
+        event.transaction.hash.toHex()
+      ])
     }
   }
 }

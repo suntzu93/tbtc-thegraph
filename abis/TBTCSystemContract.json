@@ -201,6 +201,12 @@
         "type": "address"
       },
       {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "_txid",
+        "type": "bytes32"
+      },
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "_timestamp",
@@ -272,13 +278,19 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_factorySelector",
+        "name": "_keepStakedFactory",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_ethBackedFactory",
+        "name": "_fullyBackedFactory",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_factorySelector",
         "type": "address"
       },
       {
@@ -288,7 +300,7 @@
         "type": "uint256"
       }
     ],
-    "name": "KeepFactorySingleShotUpdateStarted",
+    "name": "KeepFactoriesUpdateStarted",
     "type": "event"
   },
   {
@@ -297,17 +309,23 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_factorySelector",
+        "name": "_keepStakedFactory",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_ethBackedFactory",
+        "name": "_fullyBackedFactory",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_factorySelector",
         "type": "address"
       }
     ],
-    "name": "KeepFactorySingleShotUpdated",
+    "name": "KeepFactoriesUpdated",
     "type": "event"
   },
   {
@@ -429,7 +447,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_utxoSize",
+        "name": "_utxoValue",
         "type": "uint256"
       },
       {
@@ -617,16 +635,21 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_factorySelector",
+        "name": "_keepStakedFactory",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_ethBackedFactory",
+        "name": "_fullyBackedFactory",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_factorySelector",
         "type": "address"
       }
     ],
-    "name": "beginKeepFactorySingleShotUpdate",
+    "name": "beginKeepFactoriesUpdate",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -662,7 +685,7 @@
     "constant": false,
     "inputs": [],
     "name": "emergencyPauseNewDeposits",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -715,7 +738,7 @@
   {
     "constant": false,
     "inputs": [],
-    "name": "finalizeKeepFactorySingleShotUpdate",
+    "name": "finalizeKeepFactoriesUpdate",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -778,6 +801,33 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "getKeepFactoriesUpgradeabilityPeriod",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getMaximumLotSize",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getMinimumLotSize",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "getNewDepositFeeEstimate",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "payable": false,
@@ -790,7 +840,7 @@
     "name": "getPriceFeedGovernanceTimeDelay",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -814,7 +864,16 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "getRemainingKeepFactorySingleShotUpdateTime",
+    "name": "getRemainingKeepFactoriesUpdateTime",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getRemainingKeepFactoriesUpgradeabilityTime",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "payable": false,
     "stateMutability": "view",
@@ -924,7 +983,11 @@
   {
     "constant": true,
     "inputs": [
-      { "internalType": "uint64", "name": "_lotSizeSatoshis", "type": "uint64" }
+      {
+        "internalType": "uint64",
+        "name": "_requestedLotSizeSatoshis",
+        "type": "uint64"
+      }
     ],
     "name": "isAllowedLotSize",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
@@ -937,6 +1000,24 @@
     "inputs": [],
     "name": "isOwner",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "keepSize",
+    "outputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "keepThreshold",
+    "outputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
@@ -981,7 +1062,9 @@
   },
   {
     "constant": false,
-    "inputs": [],
+    "inputs": [
+      { "internalType": "bytes32", "name": "_txid", "type": "bytes32" }
+    ],
     "name": "logFunded",
     "outputs": [],
     "payable": false,
@@ -1037,7 +1120,7 @@
     "inputs": [
       { "internalType": "address", "name": "_requester", "type": "address" },
       { "internalType": "bytes32", "name": "_digest", "type": "bytes32" },
-      { "internalType": "uint256", "name": "_utxoSize", "type": "uint256" },
+      { "internalType": "uint256", "name": "_utxoValue", "type": "uint256" },
       {
         "internalType": "bytes",
         "name": "_redeemerOutputScript",
@@ -1115,6 +1198,15 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [],
+    "name": "refreshMinimumBondableValue",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [],
     "name": "relay",
@@ -1137,9 +1229,11 @@
   {
     "constant": false,
     "inputs": [
-      { "internalType": "uint256", "name": "_m", "type": "uint256" },
-      { "internalType": "uint256", "name": "_n", "type": "uint256" },
-      { "internalType": "uint256", "name": "_bond", "type": "uint256" },
+      {
+        "internalType": "uint64",
+        "name": "_requestedLotSizeSatoshis",
+        "type": "uint64"
+      },
       {
         "internalType": "uint256",
         "name": "_maxSecuredLifetime",

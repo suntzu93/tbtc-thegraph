@@ -26,6 +26,7 @@ enum DepositState{
   SETUP_FAILED
 }
 
+
 type Transfer @entity {
   id: ID!
   timestamp: BigInt!
@@ -140,7 +141,6 @@ type BondedECDSAKeep @entity{
   owner: Bytes!
   transaction: Transaction!
   keepAddress: Bytes
-  bondAmount: BigDecimal!
   honestThreshold : BigInt
   timestamp: BigInt!
   openKeepFeeEstimate: BigDecimal
@@ -152,13 +152,17 @@ type BondedECDSAKeep @entity{
 
 type TotalBondedECDSAKeep @entity{
   id: ID!
-  totalAmount : BigDecimal!
+  totalAvailable : BigDecimal!
+  totalBonded : BigDecimal!
+  totalKeepOpened : BigInt
+  totalKeepActive: BigInt
 }
 
 type Member @entity{
   "Operator address"
   id: ID!
-  totalUnboundAvailable: BigDecimal
+  totalUnboundAvailable: BigDecimal!
+  totalBonded : BigDecimal!
   destination : Bytes
   seizeAmount : BigDecimal
   bondedECDSAKeeps: [BondedECDSAKeep!]
@@ -172,8 +176,6 @@ type KeepBonding @entity{
   operator: [Member!] @derivedFrom(field: "keeps")
   referenceID: BigInt
   sortitionPool: Bytes
-  unboundAvailable: BigDecimal
-  lockedBond : BigDecimal
   bondedECDSAKeep: BondedECDSAKeep
   timestamp: BigInt
 }

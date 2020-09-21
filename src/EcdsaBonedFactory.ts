@@ -13,7 +13,8 @@ import {
   getOrCreateTotalBondedECDSAKeep,
   getOrCreateKeepBonding
 } from "./utils/helpers";
-import { toDecimal } from "./utils/decimals";
+import { toDecimal  } from "./utils/decimals";
+import { BIGINT_ONE } from "./utils/contants";
 
 export function handleBondedECDSAKeepCreated(
   event: BondedECDSAKeepCreated
@@ -36,7 +37,6 @@ export function handleBondedECDSAKeepCreated(
   ecdsaBonedKeepFactory.honestThreshold = event.params.honestThreshold;
   ecdsaBonedKeepFactory.timestamp = event.block.timestamp;
   ecdsaBonedKeepFactory.transaction = transaction.id;
-  ecdsaBonedKeepFactory.bondAmount = toDecimal(event.transaction.value);
   ecdsaBonedKeepFactory.keepAddress = event.params.keepAddress;
   ecdsaBonedKeepFactory.openKeepFeeEstimate = toDecimal(contract.openKeepFeeEstimate());
   ecdsaBonedKeepFactory.state = "ACTIVE";
@@ -55,9 +55,9 @@ export function handleBondedECDSAKeepCreated(
   }
 
   let totalBonded = getOrCreateTotalBondedECDSAKeep();
-  totalBonded.totalAmount  = totalBonded.totalAmount.plus(toDecimal(event.transaction.value));
+  totalBonded.totalKeepActive  =  totalBonded.totalKeepActive + BIGINT_ONE;
+  totalBonded.totalKeepOpened = totalBonded.totalKeepOpened + BIGINT_ONE;
   totalBonded.save()
-  
 }
 
 export function handleSortitionPoolCreated(event: SortitionPoolCreated): void {

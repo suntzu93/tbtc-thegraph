@@ -84,7 +84,7 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
   deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
   deposit.state = "AWAITING_SIGNER_SETUP";
-  deposit.utxoSize = toDecimalBtc(event.params._utxoSize);
+  deposit.utxoSize = toDecimalBtc(event.params._utxoValue);
   deposit.save()
 
   //DepositRedemption Info
@@ -96,7 +96,7 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   depositRedemp.redeemerOutputScript = event.params._redeemerOutputScript;
   depositRedemp.requestedFee = event.params._requestedFee;
   depositRedemp.requester = event.params._requester;
-  depositRedemp.utxoSize = toDecimalBtc(event.params._utxoSize);
+  depositRedemp.utxoSize = toDecimalBtc(event.params._utxoValue);
   depositRedemp.state = "AWAITING_WITHDRAWAL_SIGNATURE";
   depositRedemp.timestamp = event.block.timestamp;
   depositRedemp.deposit = deposit.id;

@@ -188,13 +188,10 @@ dataSources:
           handler: handleBondReleased
         - event: BondSeized(indexed address,indexed uint256,address,uint256)
           handler: handleBondSeized
-        - event: UnbondedValueDeposited(indexed address,uint256)
+        - event: UnbondedValueDeposited(indexed address,indexed address,uint256)
           handler: handleUnbondedValueDeposited
-        - event: UnbondedValueWithdrawn(indexed address,uint256)
+        - event: UnbondedValueWithdrawn(indexed address,indexed address,uint256)
           handler: handleUnbondedValueWithdrawn
-      # callHandlers:
-      #   - function: availableUnbondedValue(address,address,address)
-      #     handler: handleAvailableUnbondedValue
       file: ./src/KeepBonding.ts
 templates:
   - name: DepositContract

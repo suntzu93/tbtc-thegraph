@@ -265,7 +265,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "masterBondedECDSAKeepAddress",
+    "name": "masterKeepAddress",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "payable": false,
     "stateMutability": "view",
@@ -275,6 +275,15 @@
     "constant": true,
     "inputs": [],
     "name": "minimumBond",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "newEntryFeeEstimate",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "payable": false,
     "stateMutability": "view",
@@ -359,6 +368,27 @@
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minimumBondableValue",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_groupSize", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "_honestThreshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinimumBondableValue",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

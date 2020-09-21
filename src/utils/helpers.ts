@@ -142,7 +142,9 @@ export function getOrCreateTotalBondedECDSAKeep(): TotalBondedECDSAKeep{
   let totalBoned = TotalBondedECDSAKeep.load(id);
   if(totalBoned == null){
     totalBoned = new TotalBondedECDSAKeep(id);
-    totalBoned.totalAmount = BIGDECIMAL_ZERO;
+    totalBoned.totalAvailable = BIGDECIMAL_ZERO;
+    totalBoned.totalBonded = BIGDECIMAL_ZERO;
+    totalBoned.totalKeepActive =BIGINT_ZERO;
   }
   return totalBoned as TotalBondedECDSAKeep;
 }
@@ -154,7 +156,6 @@ export function getOrCreateEcdsaBonedKeep(id: string): BondedECDSAKeep{
     let transaction = getOrCreateTransaction(id);
     ecdsaBonedKeep.transaction = transaction.id
     ecdsaBonedKeep.timestamp = BIGINT_ZERO;
-    ecdsaBonedKeep.bondAmount = BIGDECIMAL_ZERO;
   }
   return ecdsaBonedKeep as BondedECDSAKeep;
 }
@@ -164,6 +165,8 @@ export function getOrCreateKeepMember(id: string): Member{
   if(member == null){
     member = new Member(id);
     member.bondedECDSAKeeps = [];
+    member.totalBonded = BIGDECIMAL_ZERO;
+    member.totalUnboundAvailable = BIGDECIMAL_ZERO;
     member.keeps = [];
   }
   return member as Member;
@@ -174,15 +177,6 @@ export function getOrCreateKeepBonding(id: string): KeepBonding{
   if(keepBonding == null){
     keepBonding = new KeepBonding(id);
     keepBonding.referenceID = BIGINT_ZERO;
-    keepBonding.unboundAvailable = BIGDECIMAL_ZERO;
   }
   return keepBonding as KeepBonding;
 }
-
-// export function getOrCreateSortitionPool(id: string): SortitionPool{
-//   let sortitionPool = SortitionPool.load(id);
-//   if(sortitionPool == null){
-//     sortitionPool = new SortitionPool(id);
-//   }
-//   return sortitionPool as SortitionPool;
-// }
