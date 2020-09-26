@@ -44,8 +44,8 @@ export function handleBondCreated(event: BondCreated): void {
   let keeps = operator.keeps;
   keeps.push(keepBonding.id);
   operator.keeps = keeps;
-  operator.totalUnboundAvailable = operator.totalUnboundAvailable.minus(toDecimal(event.params.amount));
-  operator.totalBonded = operator.totalBonded.plus(toDecimal(event.params.amount));
+  operator.unboundAvailable = operator.unboundAvailable.minus(toDecimal(event.params.amount));
+  operator.bonded = operator.bonded.plus(toDecimal(event.params.amount));
   operator.save()
 }
 
@@ -55,12 +55,12 @@ export function handleBondReassigned(event: BondReassigned): void {
 export function handleBondReleased(event: BondReleased): void {
   let operator = getOrCreateKeepMember(event.params.operator.toHex());
   let totalBonded = getOrCreateTotalBondedECDSAKeep();
-  totalBonded.totalAvailable  = totalBonded.totalAvailable.plus(operator.totalBonded);
-  totalBonded.totalBonded = totalBonded.totalBonded.minus(operator.totalBonded);
+  totalBonded.totalAvailable  = totalBonded.totalAvailable.plus(operator.bonded);
+  totalBonded.totalBonded = totalBonded.totalBonded.minus(operator.bonded);
   totalBonded.save()
 
-  operator.totalUnboundAvailable = operator.totalUnboundAvailable.plus(operator.totalBonded);
-  operator.totalBonded = BIGDECIMAL_ZERO;
+  operator.unboundAvailable = operator.unboundAvailable.plus(operator.bonded);
+  operator.bonded = BIGDECIMAL_ZERO;
   operator.save()
 }
 
@@ -68,7 +68,7 @@ export function handleBondSeized(event: BondSeized): void {
   let operator = getOrCreateKeepMember(event.params.operator.toHex());
   operator.destination = event.params.destination;
   operator.seizeAmount = toDecimal(event.params.amount);
-  operator.totalBonded = operator.totalBonded.minus(toDecimal(event.params.amount));
+  operator.bonded = operator.bonded.minus(toDecimal(event.params.amount));
   operator.save()  
 
   let totalBonded = getOrCreateTotalBondedECDSAKeep();
@@ -84,7 +84,7 @@ export function handleUnbondedValueDeposited(
   totalBonded.save()
 
   let operator = getOrCreateKeepMember(event.params.operator.toHex());
-  operator.totalUnboundAvailable = operator.totalUnboundAvailable.plus(toDecimal(event.params.amount));
+  operator.unboundAvailable = operator.unboundAvailable.plus(toDecimal(event.params.amount));
   operator.save()
 }
 
@@ -96,6 +96,6 @@ export function handleUnbondedValueWithdrawn(
   totalBonded.save()
 
   let operator = getOrCreateKeepMember(event.params.operator.toHex());
-  operator.totalUnboundAvailable = operator.totalUnboundAvailable.minus(toDecimal(event.params.amount));
+  operator.unboundAvailable = operator.unboundAvailable.minus(toDecimal(event.params.amount));
   operator.save()
 }

@@ -161,8 +161,8 @@ type TotalBondedECDSAKeep @entity{
 type Member @entity{
   "Operator address"
   id: ID!
-  totalUnboundAvailable: BigDecimal!
-  totalBonded : BigDecimal!
+  unboundAvailable: BigDecimal!
+  bonded : BigDecimal!
   destination : Bytes
   seizeAmount : BigDecimal
   bondedECDSAKeeps: [BondedECDSAKeep!]

@@ -165,8 +165,8 @@ export function getOrCreateKeepMember(id: string): Member{
   if(member == null){
     member = new Member(id);
     member.bondedECDSAKeeps = [];
-    member.totalBonded = BIGDECIMAL_ZERO;
-    member.totalUnboundAvailable = BIGDECIMAL_ZERO;
+    member.bonded = BIGDECIMAL_ZERO;
+    member.unboundAvailable = BIGDECIMAL_ZERO;
     member.keeps = [];
   }
   return member as Member;
