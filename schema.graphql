@@ -146,7 +146,6 @@ type BondedECDSAKeep @entity{
   openKeepFeeEstimate: BigDecimal
   state : BondedECDSAKeepState!
   deposit: Deposit!
-  keepBonding: KeepBonding! @derivedFrom(field: "bondedECDSAKeep")
   operators: [Member!] @derivedFrom(field: "bondedECDSAKeeps")
 }
 
@@ -161,21 +160,21 @@ type TotalBondedECDSAKeep @entity{
 type Member @entity{
   "Operator address"
   id: ID!
-  unboundAvailable: BigDecimal!
-  bonded : BigDecimal!
+  memberLocks: [MemberLocked!]
+  unboundAvailable : BigDecimal!
   destination : Bytes
   seizeAmount : BigDecimal
+  authorizedSortitionPool : Bytes
+  beneficiary : Bytes
   bondedECDSAKeeps: [BondedECDSAKeep!]
-  keeps: [KeepBonding!]
 }
 
-type KeepBonding @entity{
-  "Operator address + referenceID"
+type MemberLocked @entity {
+  "Operator address  + holder +  referenceID"
   id: ID!
+  operator: Bytes
   holder: Bytes
-  operator: [Member!] @derivedFrom(field: "keeps")
   referenceID: BigInt
-  sortitionPool: Bytes
-  bondedECDSAKeep: BondedECDSAKeep
-  timestamp: BigInt
+  bonded: BigDecimal!
+  member: Member! @derivedFrom(field: "memberLocks")
 }

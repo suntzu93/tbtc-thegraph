@@ -10,8 +10,7 @@ import {
   BondedECDSAKeep,
   Member,
   Deposit,
-  TotalBondedECDSAKeep,
-  KeepBonding
+  TotalBondedECDSAKeep, MemberLocked
 } from "../../generated/schema";
 
 import { DEFAULT_DECIMALS } from "./decimals";
@@ -165,18 +164,18 @@ export function getOrCreateKeepMember(id: string): Member{
   if(member == null){
     member = new Member(id);
     member.bondedECDSAKeeps = [];
-    member.bonded = BIGDECIMAL_ZERO;
+    member.memberLocks = [];
     member.unboundAvailable = BIGDECIMAL_ZERO;
-    member.keeps = [];
   }
   return member as Member;
 }
 
-export function getOrCreateKeepBonding(id: string): KeepBonding{
-  let keepBonding = KeepBonding.load(id);
-  if(keepBonding == null){
-    keepBonding = new KeepBonding(id);
-    keepBonding.referenceID = BIGINT_ZERO;
+
+export function getOrCreateMemberLocked(id: string): MemberLocked{
+  let member = MemberLocked.load(id);
+  if(member == null){
+    member = new MemberLocked(id);
+    member.bonded = BIGDECIMAL_ZERO;
   }
-  return keepBonding as KeepBonding;
+  return member as MemberLocked;
 }

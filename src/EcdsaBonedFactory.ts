@@ -10,8 +10,7 @@ import {
   getOrCreateEcdsaBonedKeep,
   getOrCreateTransaction,
   getOrCreateKeepMember,
-  getOrCreateTotalBondedECDSAKeep,
-  getOrCreateKeepBonding
+  getOrCreateTotalBondedECDSAKeep
 } from "./utils/helpers";
 import { toDecimal  } from "./utils/decimals";
 import { BIGINT_ONE } from "./utils/contants";
