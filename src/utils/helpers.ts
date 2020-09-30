@@ -101,7 +101,7 @@ export function getOrCreateDeposit(id: string) : Deposit{
     deposit.timestamp = BIGINT_ZERO;
     deposit.signerFeeDivisor = BIGINT_ZERO;
     deposit.state = "AWAITING_SIGNER_SETUP";
-    deposit.lotSize = BIGINT_ZERO;
+    deposit.lotSize = BIGDECIMAL_ZERO;
     deposit.initialCollateralizedPercent = BIGINT_ZERO;
     deposit.undercollateralizedThresholdPercent = BIGINT_ZERO;
     deposit.severelyUndercollateralizedThresholdPercent = BIGINT_ZERO;

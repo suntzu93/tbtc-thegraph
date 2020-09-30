@@ -92,7 +92,7 @@ type Deposit @entity{
   transaction: Transaction
   signerFeeDivisor : BigInt
   state : DepositState!
-  lotSize : BigInt
+  lotSize : BigDecimal
   initialCollateralizedPercent : BigInt
   undercollateralizedThresholdPercent : BigInt
   severelyUndercollateralizedThresholdPercent : BigInt

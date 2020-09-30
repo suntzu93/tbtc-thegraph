@@ -35,10 +35,6 @@ export function handleKeepClosed(event: KeepClosed): void {
       let totalBonded = getOrCreateTotalBondedECDSAKeep();
       totalBonded.totalKeepActive  =  totalBonded.totalKeepActive - BIGINT_ONE;
       totalBonded.save()
-
-      log.error("handleKeepClosed = transaction {}",[
-        event.transaction.hash.toHex()
-      ])
     }
   }
 }
@@ -62,10 +58,6 @@ export function handleKeepTerminated(event: KeepTerminated): void {
       let totalBonded = getOrCreateTotalBondedECDSAKeep();
       totalBonded.totalKeepActive  =  totalBonded.totalKeepActive - BIGINT_ONE;
       totalBonded.save()
-
-      log.error("handleKeepTerminated = transaction {}",[
-        event.transaction.hash.toHex()
-      ])
     }
   }
 }

@@ -15,29 +15,29 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - AllowNewDepositsUpdated
-        # - CollateralizationThresholdsUpdateStarted
-        # - CollateralizationThresholdsUpdated
+        - CollateralizationThresholdsUpdateStarted
+        - CollateralizationThresholdsUpdated
         - CourtesyCalled
         - Created
-        # - EthBtcPriceFeedAdded
-        # - EthBtcPriceFeedAdditionStarted
-        # - ExitedCourtesyCall
-        # - FraudDuringSetup
-        # - Funded
-        # - FunderAbortRequested
+        - EthBtcPriceFeedAdded
+        - EthBtcPriceFeedAdditionStarted
+        - ExitedCourtesyCall
+        - FraudDuringSetup
+        - Funded
+        - FunderAbortRequested
         - GotRedemptionSignature
-        # - KeepFactorySingleShotUpdateStarted
-        # - KeepFactorySingleShotUpdated
+        - KeepFactoriesUpdateStarted
+        - KeepFactoriesUpdated
         - Liquidated
-        # - LotSizesUpdateStarted
-        # - LotSizesUpdated
-        # - OwnershipTransferred
+        - LotSizesUpdateStarted
+        - LotSizesUpdated
+        - OwnershipTransferred
         - Redeemed
         - RedemptionRequested
-        # - RegisteredPubkey
+        - RegisteredPubkey
         - SetupFailed
-        # - SignerFeeDivisorUpdateStarted
-        # - SignerFeeDivisorUpdated
+        - SignerFeeDivisorUpdateStarted
+        - SignerFeeDivisorUpdated
         - StartedLiquidation
       abis:
         - name: TBTCSystemContract
@@ -45,52 +45,52 @@ dataSources:
       eventHandlers:
         - event: AllowNewDepositsUpdated(bool)
           handler: handleAllowNewDepositsUpdated
-        # - event: CollateralizationThresholdsUpdateStarted(uint16,uint16,uint16,uint256)
-        #   handler: handleCollateralizationThresholdsUpdateStarted
-        # - event: CollateralizationThresholdsUpdated(uint16,uint16,uint16)
-        #   handler: handleCollateralizationThresholdsUpdated
+        - event: CollateralizationThresholdsUpdateStarted(uint16,uint16,uint16,uint256)
+          handler: handleCollateralizationThresholdsUpdateStarted
+        - event: CollateralizationThresholdsUpdated(uint16,uint16,uint16)
+          handler: handleCollateralizationThresholdsUpdated
         - event: CourtesyCalled(indexed address,uint256)
           handler: handleCourtesyCalled
         - event: Created(indexed address,indexed address,uint256)
           handler: handleCreated
-        # - event: EthBtcPriceFeedAdded(address)
-        #   handler: handleEthBtcPriceFeedAdded
-        # - event: EthBtcPriceFeedAdditionStarted(address,uint256)
-        #   handler: handleEthBtcPriceFeedAdditionStarted
-        # - event: ExitedCourtesyCall(indexed address,uint256)
-        #   handler: handleExitedCourtesyCall
-        # - event: FraudDuringSetup(indexed address,uint256)
-        #   handler: handleFraudDuringSetup
-        # - event: Funded(indexed address,uint256)
-        #   handler: handleFunded
-        # - event: FunderAbortRequested(indexed address,bytes)
-        #   handler: handleFunderAbortRequested
+        - event: EthBtcPriceFeedAdded(address)
+          handler: handleEthBtcPriceFeedAdded
+        - event: EthBtcPriceFeedAdditionStarted(address,uint256)
+          handler: handleEthBtcPriceFeedAdditionStarted
+        - event: ExitedCourtesyCall(indexed address,uint256)
+          handler: handleExitedCourtesyCall
+        - event: FraudDuringSetup(indexed address,uint256)
+          handler: handleFraudDuringSetup
+        - event: Funded(indexed address,indexed bytes32,uint256)
+          handler: handleFunded
+        - event: FunderAbortRequested(indexed address,bytes)
+          handler: handleFunderAbortRequested
         - event: GotRedemptionSignature(indexed address,indexed bytes32,bytes32,bytes32,uint256)
           handler: handleGotRedemptionSignature
-        # - event: KeepFactorySingleShotUpdateStarted(address,address,uint256)
-        #   handler: handleKeepFactorySingleShotUpdateStarted
-        # - event: KeepFactorySingleShotUpdated(address,address)
-        #   handler: handleKeepFactorySingleShotUpdated
+        - event: KeepFactoriesUpdateStarted(address,address,address,uint256)
+          handler: handleKeepFactoriesUpdateStarted
+        - event: KeepFactoriesUpdated(address,address,address)
+          handler: handleKeepFactoriesUpdated
         - event: Liquidated(indexed address,uint256)
           handler: handleLiquidated
-        # - event: LotSizesUpdateStarted(uint64[],uint256)
-        #   handler: handleLotSizesUpdateStarted
-        # - event: LotSizesUpdated(uint64[])
-        #   handler: handleLotSizesUpdated
-        # - event: OwnershipTransferred(indexed address,indexed address)
-        #   handler: handleOwnershipTransferred
+        - event: LotSizesUpdateStarted(uint64[],uint256)
+          handler: handleLotSizesUpdateStarted
+        - event: LotSizesUpdated(uint64[])
+          handler: handleLotSizesUpdated
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
         - event: Redeemed(indexed address,indexed bytes32,uint256)
           handler: handleRedeemed
         - event: RedemptionRequested(indexed address,indexed address,indexed bytes32,uint256,bytes,uint256,bytes)
           handler: handleRedemptionRequested
-        # - event: RegisteredPubkey(indexed address,bytes32,bytes32,uint256)
-          # handler: handleRegisteredPubkey
+        - event: RegisteredPubkey(indexed address,bytes32,bytes32,uint256)
+          handler: handleRegisteredPubkey
         - event: SetupFailed(indexed address,uint256)
           handler: handleSetupFailed
-        # - event: SignerFeeDivisorUpdateStarted(uint16,uint256)
-        #   handler: handleSignerFeeDivisorUpdateStarted
-        # - event: SignerFeeDivisorUpdated(uint16)
-        #   handler: handleSignerFeeDivisorUpdated
+        - event: SignerFeeDivisorUpdateStarted(uint16,uint256)
+          handler: handleSignerFeeDivisorUpdateStarted
+        - event: SignerFeeDivisorUpdated(uint16)
+          handler: handleSignerFeeDivisorUpdated
         - event: StartedLiquidation(indexed address,bool,uint256)
           handler: handleStartedLiquidation
       file: ./src/TBTCSystem.ts
@@ -205,13 +205,13 @@ templates:
       language: wasm/assemblyscript
       file: ./src/Deposit.ts
       entities:
-        - CreateNewDeposit
+        - InitializeDeposit
       abis:
         - name: DepositContract
           file: ./abis/DepositContract.json
       callHandlers:
-        - function: createNewDeposit(address,address,address,address,address,uint16,uint16,uint64)
-          handler: handleCreateNewDeposit
+        - function: initializeDeposit(address,address,address,address,address,uint64)
+          handler: handleInitializeDeposit
   - kind: ethereum/contract
     name: ECDSABondedContract
     network: mainnet

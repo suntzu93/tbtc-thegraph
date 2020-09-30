@@ -2,24 +2,20 @@ import { BigInt, log, DataSourceContext, dataSource } from "@graphprotocol/graph
 
 
 import {
-    getOrCreateDepositRedemption,
-    getOrCreateTransaction,
-    getOrCreateAllowNewDepositsUpdated,
-    getOrCreateDepositLiquidation as getDepositLiquidation,
     getOrCreateDeposit,
-    getTbtcTokenEntity
 } from "./utils/helpers";
 
 import {
-    CreateNewDepositCall,
-    InitializeCall
+    InitializeDepositCall
 } from "../generated/templates/DepositContract/DepositContract"
 
-export function handleCreateNewDeposit(event: CreateNewDepositCall): void {
+import { toDecimalBtc } from "./utils/decimals";
+
+export function handleInitializeDeposit(event: InitializeDepositCall): void {
     let context = dataSource.context();
     let owner = context.getString("depositAddress")
     let deposit = getOrCreateDeposit(owner);
-    deposit.lotSize = event.inputs._lotSizeSatoshis;
+    deposit.lotSize = toDecimalBtc(event.inputs._lotSizeSatoshis);
     deposit.state = "AWAITING_SIGNER_SETUP";
     deposit.save()
 }

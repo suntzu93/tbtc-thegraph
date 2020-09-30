@@ -1,16 +1,31 @@
 import { BigInt, log } from "@graphprotocol/graph-ts"
 import {
   TBTCSystemContract,
-  GotRedemptionSignature,
-  Liquidated,
+  CollateralizationThresholdsUpdateStarted,
+  CollateralizationThresholdsUpdated,
   CourtesyCalled,
+  Created,
+  AllowNewDepositsUpdated,
+  EthBtcPriceFeedAdded,
+  EthBtcPriceFeedAdditionStarted,
+  ExitedCourtesyCall,
+  FraudDuringSetup,
+  Funded,
+  FunderAbortRequested,
+  GotRedemptionSignature,
+  KeepFactoriesUpdateStarted,
+  KeepFactoriesUpdated,
+  Liquidated,
+  LotSizesUpdateStarted,
+  LotSizesUpdated,
+  OwnershipTransferred,
   Redeemed,
   RedemptionRequested,
-  StartedLiquidation,
-  Created,
+  RegisteredPubkey,
   SetupFailed,
-  AllowNewDepositsUpdated,
-  RegisteredPubkey
+  SignerFeeDivisorUpdateStarted,
+  SignerFeeDivisorUpdated,
+  StartedLiquidation, LogCourtesyCalledCall
 } from "../generated/TBTCSystemContract/TBTCSystemContract"
 
 import {
@@ -41,7 +56,6 @@ export function handleCreated (event: Created): void {
   deposit.initialCollateralizedPercent =  BigInt.fromI32(systemContract.getInitialCollateralizedPercent());
   deposit.remainingPauseTerm = systemContract.try_getRemainingPauseTerm() as BigInt;
   deposit.signerFeeDivisor = BigInt.fromI32(systemContract.getSignerFeeDivisor());
-  // deposit.lotSize = systemContract.getAllowedLotSizes();
   deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
   deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
   deposit.state = "AWAITING_SIGNER_SETUP";
@@ -80,7 +94,6 @@ export function handleRedemptionRequested(event: RedemptionRequested): void {
   deposit.initialCollateralizedPercent =  BigInt.fromI32(systemContract.getInitialCollateralizedPercent());
   deposit.remainingPauseTerm = systemContract.try_getRemainingPauseTerm() as BigInt;
   deposit.signerFeeDivisor = BigInt.fromI32(systemContract.getSignerFeeDivisor());
-  // deposit.lotSize = systemContract.getAllowedLotSizes();
   deposit.severelyUndercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getSeverelyUndercollateralizedThresholdPercent());
   deposit.undercollateralizedThresholdPercent = BigInt.fromI32(systemContract.getUndercollateralizedThresholdPercent());
   deposit.state = "AWAITING_SIGNER_SETUP";
@@ -176,3 +189,96 @@ export function handleAllowNewDepositsUpdated(event: AllowNewDepositsUpdated): v
   depositAllowStateEntity.allowNewDepositsUpdated = event.params._allowNewDeposits;
   depositAllowStateEntity.save()
 }
+
+  // Note: If a handler doesn't require existing field values, it is faster
+  // _not_ to load the entity from the store. Instead, create it fresh with
+  // `new Entity(...)`, set the fields that should be updated and save the
+  // entity back to the store. Fields that were not set or unset remain
+  // unchanged, allowing for partial updates to be applied.
+
+  // It is also possible to access smart contracts from mappings. For
+  // example, the contract that has emitted the event can be connected to
+  // with:
+  //
+  // let contract = Contract.bind(event.address)
+  //
+  // The following functions can then be called on this contract to access
+  // state variables and other data:
+  //
+  // - contract.approvedToLog(...)
+  // - contract.fetchBitcoinPrice(...)
+  // - contract.fetchRelayCurrentDifficulty(...)
+  // - contract.fetchRelayPreviousDifficulty(...)
+  // - contract.getAllowNewDeposits(...)
+  // - contract.getAllowedLotSizes(...)
+  // - contract.getGovernanceTimeDelay(...)
+  // - contract.getInitialCollateralizedPercent(...)
+  // - contract.getKeepFactoriesUpgradeabilityPeriod(...)
+  // - contract.getMaximumLotSize(...)
+  // - contract.getMinimumLotSize(...)
+  // - contract.getNewDepositFeeEstimate(...)
+  // - contract.getPriceFeedGovernanceTimeDelay(...)
+  // - contract.getRemainingCollateralizationThresholdsUpdateTime(...)
+  // - contract.getRemainingEthBtcPriceFeedAdditionTime(...)
+  // - contract.getRemainingKeepFactoriesUpdateTime(...)
+  // - contract.getRemainingKeepFactoriesUpgradeabilityTime(...)
+  // - contract.getRemainingLotSizesUpdateTime(...)
+  // - contract.getRemainingPauseTerm(...)
+  // - contract.getRemainingSignerFeeDivisorUpdateTime(...)
+  // - contract.getSeverelyUndercollateralizedThresholdPercent(...)
+  // - contract.getSignerFeeDivisor(...)
+  // - contract.getUndercollateralizedThresholdPercent(...)
+  // - contract.isAllowedLotSize(...)
+  // - contract.isOwner(...)
+  // - contract.keepSize(...)
+  // - contract.keepThreshold(...)
+  // - contract.owner(...)
+  // - contract.priceFeed(...)
+  // - contract.relay(...)
+
+export function handleCollateralizationThresholdsUpdateStarted(
+  event: CollateralizationThresholdsUpdateStarted
+): void {}
+
+export function handleCollateralizationThresholdsUpdated(
+  event: CollateralizationThresholdsUpdated
+): void {}
+
+export function handleEthBtcPriceFeedAdded(event: EthBtcPriceFeedAdded): void {}
+
+export function handleEthBtcPriceFeedAdditionStarted(
+  event: EthBtcPriceFeedAdditionStarted
+): void {}
+
+export function handleExitedCourtesyCall(event: ExitedCourtesyCall): void {}
+
+export function handleFraudDuringSetup(event: FraudDuringSetup): void {}
+
+export function handleFunded(event: Funded): void {}
+
+export function handleFunderAbortRequested(event: FunderAbortRequested): void {}
+
+
+export function handleKeepFactoriesUpdateStarted(
+  event: KeepFactoriesUpdateStarted
+): void {}
+
+export function handleKeepFactoriesUpdated(event: KeepFactoriesUpdated): void {}
+
+export function handleLotSizesUpdateStarted(
+  event: LotSizesUpdateStarted
+): void {}
+
+export function handleLotSizesUpdated(event: LotSizesUpdated): void {}
+
+export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
+
+export function handleRegisteredPubkey(event: RegisteredPubkey): void {}
+
+export function handleSignerFeeDivisorUpdateStarted(
+  event: SignerFeeDivisorUpdateStarted
+): void {}
+
+export function handleSignerFeeDivisorUpdated(
+  event: SignerFeeDivisorUpdated
+): void {}
