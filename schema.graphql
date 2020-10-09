@@ -65,6 +65,13 @@ type TBTCToken @entity{
   holders: [TokenHolder!] @derivedFrom(field: "tbtcToken")
 }
 
+type TBTCHistory @entity{
+  "timestamp 24h"
+  id: ID!
+  mint: BigDecimal
+  burn: BigDecimal
+}
+
 type Mint @entity{
   id : ID!  
   timestamp: BigInt!

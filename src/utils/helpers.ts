@@ -10,7 +10,7 @@ import {
   BondedECDSAKeep,
   Member,
   Deposit,
-  TotalBondedECDSAKeep, MemberLocked
+  TotalBondedECDSAKeep, MemberLocked, TBTCHistory
 } from "../../generated/schema";
 
 import { DEFAULT_DECIMALS } from "./decimals";
@@ -81,6 +81,18 @@ export function getTbtcTokenEntity(): TBTCToken {
   }
 
   return tBtcToken as TBTCToken;
+}
+
+export function getTbtcTokenHistory(id: string): TBTCHistory {
+  let tBtcToken = TBTCHistory.load(id);
+
+  if (tBtcToken == null) {
+    tBtcToken = new TBTCHistory(id);
+    tBtcToken.mint = BIGDECIMAL_ZERO;
+    tBtcToken.burn = BIGDECIMAL_ZERO;
+  }
+
+  return tBtcToken as TBTCHistory;
 }
 
 export function getOrCreateAllowNewDepositsUpdated(): AllowNewDepositsUpdated {

@@ -16,7 +16,8 @@ import {
   getOrCreateTransfer,
   getOrCreateTokenHolder,
   getTbtcTokenEntity,
-  getOrCreateTransaction
+  getOrCreateTransaction,
+  getTbtcTokenHistory
 } from "./utils/helpers";
 import { toDecimal } from "./utils/decimals";
 
@@ -39,6 +40,11 @@ export function handleTransfer(event: Transfer): void {
   transfer.gasUsed = event.transaction.gasUsed;
   transfer.save()
 
+  let date:Date = new Date(transaction.timestamp.toI32())
+  log.error("date : {}",[date.now()])
+
+  // date.setHours(0,0,0,0)
+  // log.error("new date : {}",[date.toDateString()])
   
   let contract = TBTCTokenContract.bind(event.address)
   tBtcToken.totalSupply = toDecimal(contract.totalSupply());
